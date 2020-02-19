@@ -8,6 +8,27 @@ npm install @prisguiden/react-carousel --save
 
 # Usage
 
+Add the needed carousel css/to your project
+
+```scss
+
+// my-styles.scss
+@use 'carousel' with (
+  $base-size: 14px,
+  $primary-color: purple
+);
+
+```
+
+...or just add the precompiled css to your DOM
+
+```html
+<!-- Copy /dist/carousel.css to your assets folder -->
+<link rel="stylesheet" type="text/css" href="/my-assets/css/carousel.css" />
+```
+
+Create a React component and use Carousel as a wrapper
+
 ```jsx
 
 import React from "react"

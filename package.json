@@ -1,5 +1,5 @@
 {
-  "name": "react-carousel",
+  "name": "@prisguiden/react-carousel",
   "version": "1.0.0",
   "description": "Wrap HTMLelements or React Components in me to make them into slides in a carousel",
   "files": [
@@ -10,7 +10,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Prisguiden/react-carousel"
+    "url": "git+https://github.com/Prisguiden/react-carousel.git"
   },
   "keywords": [
     "react-component",
@@ -32,5 +32,9 @@
   "bugs": {
     "url": "https://github.com/Prisguiden/react-carousel/issues"
   },
-  "homepage": "https://github.com/Prisguiden/react-carousel"
+  "homepage": "https://github.com/Prisguiden/react-carousel",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
 }
