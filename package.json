@@ -1,0 +1,36 @@
+{
+  "name": "react-carousel",
+  "version": "1.0.0",
+  "description": "Wrap HTMLelements or React Components in me to make them into slides in a carousel",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "author": "Geir Kristian Thunem @ Prisguiden",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Prisguiden/react-carousel"
+  },
+  "keywords": [
+    "react-component",
+    "carousel",
+    "slider",
+    "image",
+    "infinite",
+    "loop",
+    "vertical",
+    "touch",
+    "swipe"
+  ],
+  "devDependencies": {},
+  "dependencies": {
+    "prop-types": "^15.7.2",
+    "react": "^16.12.0",
+    "react-swipeable": "^5.5.1"
+  },
+  "bugs": {
+    "url": "https://github.com/Prisguiden/react-carousel/issues"
+  },
+  "homepage": "https://github.com/Prisguiden/react-carousel"
+}
