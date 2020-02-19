@@ -1,0 +1,122 @@
+.carousel-container {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    &--with-controls {
+        padding: 0 $base-size*2.5;
+    }
+}
+
+.carousel-swipe-wrapper {
+    height: 100%;
+    width: 100%;
+    cursor: move;
+    cursor: grab;
+    cursor: -moz-grab;
+    cursor: -webkit-grab;
+    &:active {
+        cursor: grabbing;
+        cursor: -moz-grabbing;
+        cursor: -webkit-grabbing;
+    }
+
+    .carousel {
+        &--transition-delay {
+            transition-duration: 300ms;
+        }
+        &--vertical {
+
+        }
+    }
+}
+
+.carousel {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: pointer;
+
+    &--vertical {
+        @extend .carousel;
+        flex-direction: column;
+    }
+
+    &__slide {
+        position: relative;
+        z-index: 0;
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+
+        &--current {
+            // add extra styles here if highlight is wanted
+        }
+        >* {
+            max-width: 100%;
+            max-height: 100%;
+            pointer-events: none;
+            touch-action: none;
+        }
+    }
+
+    &__control--prev, &__control--next {
+        background: white;
+        padding: 0;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        width: $base-size*2.5;
+        z-index: 1;
+        background-repeat: no-repeat;
+        background-position: center;
+        border-radius: 0;
+        // note: text is present present to aid screen readers
+        font-size: 0;
+        color: transparent;
+        border: none;
+    }
+    &__control--prev {
+        left: 0;
+        background-image: url("data:image/svg+xml;utf8,<svg width='14px' height='23px' viewBox='0 0 14 23' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'><g id='Page-1' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'><path d='M13.875,2.109375 C13.875,2.31770937 13.7968758,2.49999922 13.640625,2.65625 L4.890625,11.40625 L13.640625,20.234375 C13.7968758,20.2864586 13.875,20.442707 13.875,20.703125 C13.875,20.9114594 13.7968758,21.0937492 13.640625,21.25 L12.546875,22.34375 C12.3906242,22.5000008 12.2083344,22.578125 12,22.578125 C11.7916656,22.578125 11.6093758,22.5000008 11.453125,22.34375 L1.0625,11.953125 C0.906249219,11.7968742 0.828125,11.6145844 0.828125,11.40625 C0.828125,11.2499992 0.906249219,11.0937508 1.0625,10.9375 L11.453125,0.546875 C11.6093758,0.390624219 11.7916656,0.3125 12,0.3125 C12.2083344,0.3125 12.3906242,0.390624219 12.546875,0.546875 L13.640625,1.640625 C13.7968758,1.79687578 13.875,1.95312422 13.875,2.109375 Z' id='j' fill='%236a08b9' fill-rule='nonzero'></path></g></svg>");
+        &:hover {
+            background-image: url("data:image/svg+xml;utf8,<svg width='14px' height='23px' viewBox='0 0 14 23' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'><g id='Page-1' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'><path d='M13.875,2.109375 C13.875,2.31770937 13.7968758,2.49999922 13.640625,2.65625 L4.890625,11.40625 L13.640625,20.234375 C13.7968758,20.2864586 13.875,20.442707 13.875,20.703125 C13.875,20.9114594 13.7968758,21.0937492 13.640625,21.25 L12.546875,22.34375 C12.3906242,22.5000008 12.2083344,22.578125 12,22.578125 C11.7916656,22.578125 11.6093758,22.5000008 11.453125,22.34375 L1.0625,11.953125 C0.906249219,11.7968742 0.828125,11.6145844 0.828125,11.40625 C0.828125,11.2499992 0.906249219,11.0937508 1.0625,10.9375 L11.453125,0.546875 C11.6093758,0.390624219 11.7916656,0.3125 12,0.3125 C12.2083344,0.3125 12.3906242,0.390624219 12.546875,0.546875 L13.640625,1.640625 C13.7968758,1.79687578 13.875,1.95312422 13.875,2.109375 Z' id='j' fill='%239318f5' fill-rule='nonzero'></path></g></svg>");
+        }
+    }
+    &__control--next {
+        right: 0;
+        background-image: url("data:image/svg+xml;utf8,<svg width='14px' height='23px' viewBox='0 0 14 23' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'><g id='Page-1' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'><path d='M13.171875,11.40625 C13.171875,11.6145844 13.0937508,11.7968742 12.9375,11.953125 L2.546875,22.34375 C2.39062422,22.5000008 2.20833437,22.578125 2,22.578125 C1.79166563,22.578125 1.60937578,22.5000008 1.453125,22.34375 L0.359375,21.25 C0.203124219,21.0937492 0.125,20.9114594 0.125,20.703125 C0.125,20.442707 0.203124219,20.2864586 0.359375,20.234375 L9.109375,11.40625 L0.359375,2.65625 C0.203124219,2.49999922 0.125,2.31770937 0.125,2.109375 C0.125,1.95312422 0.203124219,1.79687578 0.359375,1.640625 L1.453125,0.546875 C1.60937578,0.390624219 1.79166563,0.3125 2,0.3125 C2.20833437,0.3125 2.39062422,0.390624219 2.546875,0.546875 L12.9375,10.9375 C13.0937508,11.0937508 13.171875,11.2499992 13.171875,11.40625 Z' id='l' fill='%236a08b9' fill-rule='nonzero'></path></g></svg>");
+        &:hover {
+            background-image: url("data:image/svg+xml;utf8,<svg width='14px' height='23px' viewBox='0 0 14 23' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'><g id='Page-1' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'><path d='M13.171875,11.40625 C13.171875,11.6145844 13.0937508,11.7968742 12.9375,11.953125 L2.546875,22.34375 C2.39062422,22.5000008 2.20833437,22.578125 2,22.578125 C1.79166563,22.578125 1.60937578,22.5000008 1.453125,22.34375 L0.359375,21.25 C0.203124219,21.0937492 0.125,20.9114594 0.125,20.703125 C0.125,20.442707 0.203124219,20.2864586 0.359375,20.234375 L9.109375,11.40625 L0.359375,2.65625 C0.203124219,2.49999922 0.125,2.31770937 0.125,2.109375 C0.125,1.95312422 0.203124219,1.79687578 0.359375,1.640625 L1.453125,0.546875 C1.60937578,0.390624219 1.79166563,0.3125 2,0.3125 C2.20833437,0.3125 2.39062422,0.390624219 2.546875,0.546875 L12.9375,10.9375 C13.0937508,11.0937508 13.171875,11.2499992 13.171875,11.40625 Z' id='l' fill='%239318f5' fill-rule='nonzero'></path></g></svg>");
+        }
+    }
+}
+
+.carousel-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: $base-size*1.5;
+    &__dot {
+        display: block;
+        margin: 0 0.6rem;
+        height: $base-size;
+        width: $base-size;
+        border-radius: $base-size*0.5;
+        background-color: $primary-color;
+        border: 2px solid white;
+        transition: border-color 300ms ease-in, opacity 300ms ease-in;
+
+        &--current {
+            border-color: $primary-color;
+            transition: border-color 300ms ease-out, opacity 300ms ease-out;
+        }
+    }
+}
