@@ -596,10 +596,14 @@ export default class Carousel extends React.Component {
                                         isCurrent={index == currentIndex}
                                         onClick={e => this.handleSelect(index)}
                                         width={
-                                            !vertical ? fixedSlideSize : null
+                                            !vertical && fixedSlideSize
+                                                ? fixedSlideSize
+                                                : null
                                         }
                                         height={
-                                            vertical ? fixedSlideSize : null
+                                            vertical && fixedSlideSize
+                                                ? fixedSlideSize
+                                                : null
                                         }
                                     >
                                         {item}
