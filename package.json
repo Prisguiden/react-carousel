@@ -37,7 +37,7 @@
     "url": "https://github.com/Prisguiden/react-carousel/issues"
   },
   "homepage": "https://github.com/Prisguiden/react-carousel",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "scripts": {
     "build": "babel ./src -d ./dist",
     "test": "echo \"Error: no test specified\" && exit 1"
