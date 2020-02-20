@@ -23,7 +23,11 @@
     "touch",
     "swipe"
   ],
-  "devDependencies": {},
+  "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.8.4",
+    "@babel/preset-react": "^7.8.3"
+  },
   "dependencies": {
     "prop-types": "^15.7.2",
     "react": "^16.12.0",
@@ -35,6 +39,7 @@
   "homepage": "https://github.com/Prisguiden/react-carousel",
   "main": "index.js",
   "scripts": {
+    "build": "babel ./src -d ./dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   }
 }
