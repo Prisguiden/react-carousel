@@ -31,7 +31,7 @@ CarouselSlide.propTypes = {
   index: PropTypes.number,
   isCurrent: PropTypes.bool,
   onClick: PropTypes.func,
-  width: PropTypes.string,
-  height: PropTypes.string,
+  width: PropTypes.number,
+  height: PropTypes.number,
   itemRef: PropTypes.func
 };
