@@ -604,8 +604,8 @@ export default class Carousel extends React.Component {
         index: index,
         isCurrent: index == currentIndex,
         onClick: e => this.handleSelect(index),
-        width: !vertical && fixedSlideSize,
-        height: vertical && fixedSlideSize
+        width: !vertical ? fixedSlideSize : null,
+        height: vertical ? fixedSlideSize : null
       }, item);
     }))), controls && React.createElement("button", {
       type: "button",
