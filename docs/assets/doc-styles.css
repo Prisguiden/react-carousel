@@ -1,0 +1,36 @@
+// Basic styles for the documentation of @Prisguiden/react-carousel
+
+html {
+    font-size: 62.5%;
+}
+
+body {
+    background-color: #131E20;
+    color: #BBBBBB;
+    font-size: 14px;
+    font-size: 1.4rem;
+    line-height: normal;
+    font-family: Helvetica, Arial, sans-serif;
+}
+
+header {
+    display: block;
+    max-width: 1000px;
+    margin: 0 auto 30px;
+}
+
+article {
+    display: block;
+    max-width: 1000px;
+    margin: 0 auto;
+
+}
+
+section {
+    margin-bottom: 30px;
+    header {
+        background-color: black;
+    }
+}
+
+a { color: rgba(206, 160, 244, 1) }
