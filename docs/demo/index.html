@@ -1,12 +1,39 @@
-<html>
+<!DOCTYPE html>
+<html xmlns:og="http://opengraphprotocol.org/schema/">
     <head>
         <title>@Prisguiden/react-carousel examples</title>
-        <link rel="stylesheet" type="text/css" href="assets/doc-styles.css" />
+        <link rel="stylesheet" type="text/css" href="/assets/doc-styles.css" />
+        <script type="text/javascript" src="https://unpkg.com/babel-standalone@^6/babel.min.js"></script>
+        <script type="text/javascript" src="https://unpkg.com/react@^16/umd/react.production.min" ></script>
+        <script type="text/javascript" src="https://unpkg.com/react-dom@^16/umd/react-dom.production.min.js" ></script>
+        <script type="text/jsx" src="https://unpkg.com/@prisguiden/react-carousel@^1.0.6/src/Carousel.jsx" ></script>
+        <script type="text/jsx" src="/examples/ControlledCarousels.jsx"></script>
     </head>
     <body>
-        <h1>@Prisguiden/react-carousel examples</h1>
-        <h2>Controlled Carousel</h2>
-        <p>Carousel gets its currentIndex from a parent component.</p>
-        <p>Whenever a carousel changes slide, it notifies the parent so other carousels can catch up</p>
+        <article>
+            <header>
+                <h1>@Prisguiden/react-carousel examples</h1>
+            </header>
+            <section>
+                <header><h2>Controlled Carousel</h2></header>
+                <p>Carousel gets its currentIndex from a parent component.</p>
+                <p>Whenever a carousel changes slide, it notifies the parent so other carousels can catch up</p>
+                <div class="demo">
+                    <div class="source">
+                        <iframe src="/examples/ControlledCarousels.jsx"></iframe>
+                    </div>
+                    <div class="rendered">
+                        <div class="component-controlled-carousels"></div>
+                    </div>
+                </div>
+            </section>
+
+        </article>
+
+        <script type="text/babel">
+            const container = document.querySelector('.component-controlled-carousels')
+            ReactDOM.render(<ControlledCarousels />, container)
+
+        </script>
     </body>
 </html>

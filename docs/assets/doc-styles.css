@@ -1,14 +1,14 @@
-// Basic styles for the documentation of @Prisguiden/react-carousel
+/* Basic styles for the documentation of @Prisguiden/react-carousel */
 
 html {
     font-size: 62.5%;
 }
 
-body {
+html body {
     background-color: #131E20;
     color: #BBBBBB;
-    font-size: 14px;
-    font-size: 1.4rem;
+    font-size: 16px;
+    font-size: 1.6rem;
     line-height: normal;
     font-family: Helvetica, Arial, sans-serif;
 }
@@ -28,9 +28,11 @@ article {
 
 section {
     margin-bottom: 30px;
-    header {
-        background-color: black;
-    }
+}
+
+section header {
+    background-color: black;
+    padding: 10px 15px;
 }
 
 a { color: rgba(206, 160, 244, 1) }
