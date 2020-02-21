@@ -3,11 +3,22 @@
     <head>
         <title>@Prisguiden/react-carousel examples</title>
         <link rel="stylesheet" type="text/css" href="/assets/doc-styles.css" />
-        <script type="text/javascript" src="https://unpkg.com/babel-standalone@^6/babel.min.js"></script>
-        <script type="text/javascript" src="https://unpkg.com/react@^16/umd/react.production.min" ></script>
-        <script type="text/javascript" src="https://unpkg.com/react-dom@^16/umd/react-dom.production.min.js" ></script>
-        <script type="text/jsx" src="https://unpkg.com/@prisguiden/react-carousel@^1.0.6/src/Carousel.jsx" ></script>
-        <script type="text/jsx" src="/examples/ControlledCarousels.jsx"></script>
+        <script src="https://unpkg.com/@babel/standalone@7.4.4/babel.js"></script>
+        <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+        <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+        <script>
+      Babel.registerPreset("my-preset", {
+        presets: [
+          [Babel.availablePresets["es2017"], { modules: false }],
+          [Babel.availablePresets["react"]]
+
+        ],
+        plugins: [
+          [Babel.availablePlugins["transform-modules-umd"]]
+        ]
+      });
+        </script>
+
     </head>
     <body>
         <article>
@@ -20,19 +31,25 @@
                 <p>Whenever a carousel changes slide, it notifies the parent so other carousels can catch up</p>
                 <div class="demo">
                     <div class="source">
-                        <iframe src="/examples/ControlledCarousels.jsx"></iframe>
+                        <iframe src=""></iframe>
                     </div>
                     <div class="rendered">
                         <div class="component-controlled-carousels"></div>
                     </div>
                 </div>
             </section>
-
         </article>
 
-        <script type="text/babel">
+        <script type="text/babel" >
+
+            class Test extends React.Component {
+                render() {
+                    return (<h1>Hello world!</h1>)
+                }
+            }
+
             const container = document.querySelector('.component-controlled-carousels')
-            ReactDOM.render(<ControlledCarousels />, container)
+            ReactDOM.render(<Test />, container)
 
         </script>
     </body>
