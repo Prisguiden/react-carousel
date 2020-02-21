@@ -4,8 +4,9 @@
         <title>@Prisguiden/react-carousel examples</title>
         <link rel="stylesheet" type="text/css" href="/assets/doc-styles.css" />
         <script src="https://unpkg.com/@babel/standalone@7.4.4/babel.js"></script>
-        <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
-        <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+        <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+        <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+        <script src="https://unpkg.com/@babel/plugin-syntax-dynamic-import"></script>
         <script>
       Babel.registerPreset("my-preset", {
         presets: [
@@ -14,8 +15,10 @@
 
         ],
         plugins: [
+          //[Babel.availablePlugins["syntax-dynamic-import"]],
           [Babel.availablePlugins["transform-modules-umd"]]
         ]
+
       });
         </script>
 
@@ -40,17 +43,10 @@
             </section>
         </article>
 
-        <script type="text/babel" >
-
-            class Test extends React.Component {
-                render() {
-                    return (<h1>Hello world!</h1>)
-                }
-            }
-
+        <script type="text/babel">
+            import ControlledCarousels from "/examples/ControlledCarousels.jsx"
             const container = document.querySelector('.component-controlled-carousels')
-            ReactDOM.render(<Test />, container)
-
+            ReactDOM.render(<ControlledCarousels />, container)
         </script>
     </body>
 </html>
