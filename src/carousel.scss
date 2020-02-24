@@ -2,6 +2,7 @@ $base-size: 1.2rem !default;
 $primary-color: rgba(106, 8, 185, 1) !default;
 
 .carousel-container {
+    box-sizing: border-box;
     position: relative;
     overflow: hidden;
     width: 100%;
