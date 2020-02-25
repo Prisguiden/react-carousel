@@ -133,12 +133,14 @@ export default class Carousel extends React.Component {
 
 
   setCarouselRef(element) {
-    const {
-      vertical,
-      children
-    } = this.props;
-    const containerSize = element.getBoundingClientRect();
-    this.availableSize = vertical ? containerSize.height : containerSize.width;
+    if (element) {
+      const {
+        vertical,
+        children
+      } = this.props;
+      const containerSize = element.getBoundingClientRect();
+      this.availableSize = vertical ? containerSize.height : containerSize.width;
+    }
   }
 
   setItemRef(element, index) {
