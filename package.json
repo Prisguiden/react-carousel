@@ -1,6 +1,6 @@
 {
   "name": "@prisguiden/react-carousel",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Wrap HTMLelements or React Components in me to make them into slides in a carousel",
   "files": [
     "dist",
