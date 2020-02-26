@@ -69,7 +69,9 @@ $primary-color: rgba(106, 8, 185, 1) !default;
             touch-action: none;
         }
         a, img {
-            -webkit-user-drag: none;
+            /* this is unfortunately the only way i've managed to disable native/OS drag events */
+            /* use <Carousel onSelect={myOnSelectFunc(index, event)}> if navigation or other actions are needed for the slide */
+            pointer-events: none;
         }
     }
 

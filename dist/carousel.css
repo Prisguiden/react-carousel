@@ -54,7 +54,9 @@
   touch-action: none;
 }
 .carousel__slide a, .carousel__slide img {
-  -webkit-user-drag: none;
+  /* this is unfortunately the only way i've managed to disable native/OS drag events */
+  /* use <Carousel onSelect={myOnSelectFunc(index, event)}> if navigation or other actions are needed for the slide */
+  pointer-events: none;
 }
 .carousel__control--prev, .carousel__control--next {
   background: white;
