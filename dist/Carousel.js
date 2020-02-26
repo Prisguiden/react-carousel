@@ -470,8 +470,15 @@ export default class Carousel extends React.Component {
       onSelect
     } = this.props;
 
-    if (onSelect && !swiping) {
-      onSelect(index, event);
+    if (!swiping) {
+      // this is a direct click, and not just onSwipeDragDone leaking the event
+      if (onSelect) {
+        // this carousel has i custom onSelect function
+        onSelect(index, event);
+      } else if (event.target.firstChild.href) {
+        // the slide is a link - navigate to href
+        window.location.href = event.target.firstChild.href;
+      }
     }
   }
 
