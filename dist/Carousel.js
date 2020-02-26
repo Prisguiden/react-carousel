@@ -90,9 +90,11 @@ export default class Carousel extends React.Component {
     const {
       children
     } = this.props;
+    var oldKeys = JSON.stringify(prevProps.children.map(child => child.key));
+    var newKeys = JSON.stringify(children.map(child => child.key));
 
-    if (!this.recalculate && this.initialized && prevProps.children.length && prevProps.children.length != children.length) {
-      // A slide has been added/removed
+    if (!this.recalculate && this.initialized && prevProps.children.length && (prevProps.children.length != children.length || oldKeys !== newKeys)) {
+      // A slide has been added,removed or moved
       // re-initialize everyting
       // recalculate will trigger recreation of clones & slidePositions when last slide runs its reference callback
       this.recalculate = true;

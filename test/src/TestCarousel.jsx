@@ -6,6 +6,13 @@ export default class TestCarousel extends React.Component {
         super(props)
 
         this.state = {
+            items: [
+                { id: 1, content: "slide1" },
+                { id: 2, content: "slide2" },
+                { id: 3, content: "slide3" },
+                { id: 4, content: "slide4" },
+                { id: 5, content: "slide5" }
+            ],
             reloading: false,
             slides: "auto",
             controls: false,
@@ -19,6 +26,7 @@ export default class TestCarousel extends React.Component {
         this.toggleBoolOption = this.toggleBoolOption.bind(this)
         this.renderToggle = this.renderToggle.bind(this)
         this.reloadCarousel = this.reloadCarousel.bind(this)
+        this.runTest = this.runTest.bind(this)
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -73,8 +81,21 @@ export default class TestCarousel extends React.Component {
         )
     }
 
+    runTest() {
+        const someNumber = Math.round(Math.random() * 100)
+        const newSlides = [...this.state.items]
+        newSlides.splice(0, 1)
+        this.setState({
+            items: [
+                { id: someNumber, content: "new slide" + someNumber },
+                ...newSlides
+            ]
+        })
+    }
+
     render() {
         const {
+            items,
             reloading,
             slides,
             controls,
@@ -83,7 +104,6 @@ export default class TestCarousel extends React.Component {
             snap,
             vertical
         } = this.state
-        const items = ["slide1", "slide2", "slide3", "slide4", "slide5"]
 
         return (
             <div className="test-carousel">
@@ -93,6 +113,7 @@ export default class TestCarousel extends React.Component {
                     {this.renderToggle("infinite")}
                     {this.renderToggle("snap")}
                     {this.renderToggle("vertical")}
+                    <button onClick={this.runTest}>Test your func</button>
                 </section>
                 <section>
                     {reloading ? (
@@ -110,9 +131,9 @@ export default class TestCarousel extends React.Component {
                                 return (
                                     <div
                                         className="test-carousel__slide"
-                                        key={index}
+                                        key={slide.id}
                                     >
-                                        {slide}
+                                        {slide.content}
                                     </div>
                                 )
                             })}
