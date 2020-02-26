@@ -431,11 +431,11 @@ export default class Carousel extends React.Component {
         if (event.keyCode === 39) this.next()
     }
 
-    handleSelect(index) {
+    handleSelect(index, event) {
         const { swiping } = this.state
         const { onSelect } = this.props
         if (onSelect && !swiping) {
-            onSelect(index)
+            onSelect(index, event)
         }
     }
 
@@ -596,7 +596,9 @@ export default class Carousel extends React.Component {
                                         key={index}
                                         index={index}
                                         isCurrent={index == currentIndex}
-                                        onClick={e => this.handleSelect(index)}
+                                        onClick={e =>
+                                            this.handleSelect(index, e)
+                                        }
                                         width={
                                             !vertical && fixedSlideSize
                                                 ? fixedSlideSize
