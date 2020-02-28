@@ -613,7 +613,7 @@ export default class Carousel extends React.Component {
     } = this.state;
     const transformStyle = this.getTransform();
     return React.createElement("div", {
-      className: "carousel-container" + (controls ? " carousel-container--with-controls " : " ") + (className ? className : "")
+      className: "carousel-container" + (controls ? vertical ? " carousel-container--with-vertical-controls" : " carousel-container--with-controls " : " ") + (className ? className : "")
     }, controls && React.createElement("button", {
       type: "button",
       className: "carousel__control " + (vertical ? "carousel__control--up" : "carousel__control--left"),

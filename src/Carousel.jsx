@@ -573,7 +573,11 @@ export default class Carousel extends React.Component {
             <div
                 className={
                     "carousel-container" +
-                    (controls ? " carousel-container--with-controls " : " ") +
+                    (controls
+                        ? vertical
+                            ? " carousel-container--with-vertical-controls"
+                            : " carousel-container--with-controls "
+                        : " ") +
                     (className ? className : "")
                 }
             >
