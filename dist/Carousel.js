@@ -13,7 +13,8 @@ const defaultState = {
   availableSize: null,
   slidesTotalSize: null,
   autoSliding: false,
-  clones: null
+  clones: null,
+  isLooping: false
 };
 export default class Carousel extends React.Component {
   constructor(props) {
@@ -326,16 +327,18 @@ export default class Carousel extends React.Component {
             // LOOP MODE - jumping between first-last
             // OR a controlled (non-infinite) component is told to swipe more than one slide
             const autoswipe = slidePositions[currentIndex].start - slidePositions[idx].start;
-            const speed = Math.round(Math.abs(autoswipe) * 1.5);
+            const speed = Math.round(Math.abs(autoswipe) * 0.25);
             this.setState({
               currentIndex: idx,
-              swiping: autoswipe
+              swiping: autoswipe,
+              isLooping: true
             }, () => {
               this.snapTimeout = setTimeout(() => {
                 this.autoSlide({
-                  swiping: 0
+                  swiping: 0,
+                  isLooping: false
                 }, speed);
-              }, 10);
+              }, 300);
             });
           } else {
             // INFINITE MODE
@@ -390,6 +393,9 @@ export default class Carousel extends React.Component {
   }
 
   autoSlide(nextState, speed) {
+    const {
+      isLooping
+    } = this.state;
     let resetSpeed = false;
 
     if (speed) {
@@ -402,6 +408,15 @@ export default class Carousel extends React.Component {
     this.setState({
       autoSliding: true
     }, () => {
+      if (isLooping && !nextState.isLooping) {
+        delete nextState.isLooping;
+        this.fadeTimeout = setTimeout(() => {
+          this.setState({
+            isLooping: false
+          });
+        }, 250);
+      }
+
       this.setState(nextState, () => {
         this.transitionTimeout = setTimeout(() => {
           this.setState({
@@ -550,7 +565,8 @@ export default class Carousel extends React.Component {
       fixedSlideSize,
       swiping,
       slidePositions,
-      autoSliding
+      autoSliding,
+      isLooping
     } = this.state;
     const style = {};
     let pos;
@@ -565,7 +581,16 @@ export default class Carousel extends React.Component {
     const x = !vertical && -pos || 0;
     const y = vertical && -pos || 0;
     style.transform = `translate3d(${x}px, ${y}px, 0px)`;
-    if (autoSliding) style.transitionDuration = this.autoSlideSpeed + "ms";
+    style.transition = `transform ${this.autoSlideSpeed}ms, filter 250ms, -webkit-filter 250ms`;
+
+    if (isLooping) {
+      style.filter = "blur(10px)";
+      style.webkitFilter = "blur(10px)";
+    } else {
+      style.filter = "none";
+      style.webkitFilter = "none";
+    }
+
     return style;
   }
 
@@ -591,7 +616,7 @@ export default class Carousel extends React.Component {
       className: "carousel-container" + (controls ? " carousel-container--with-controls " : " ") + (className ? className : "")
     }, controls && React.createElement("button", {
       type: "button",
-      className: "carousel__control--prev",
+      className: "carousel__control " + (vertical ? "carousel__control--up" : "carousel__control--left"),
       onClick: this.prev
     }, "Forrige"), React.createElement(Swipeable, _extends({
       className: "carousel-swipe-wrapper",
@@ -620,7 +645,7 @@ export default class Carousel extends React.Component {
       }, item);
     }))), controls && React.createElement("button", {
       type: "button",
-      className: "carousel__control--next",
+      className: "carousel__control " + (vertical ? "carousel__control--down" : "carousel__control--right"),
       onClick: this.next
     }, "Neste"));
   }

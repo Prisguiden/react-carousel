@@ -11,12 +11,16 @@ export default class TestCarousel extends React.Component {
                 { id: 2, content: "slide2" },
                 { id: 3, content: "slide3" },
                 { id: 4, content: "slide4" },
-                { id: 5, content: "slide5" }
+                { id: 5, content: "slide5" },
+                { id: 6, content: "slide6" },
+                { id: 7, content: "slide7" },
+                { id: 8, content: "slide8" },
+                { id: 9, content: "slide9" }
             ],
             reloading: false,
             slides: "auto",
-            controls: false,
-            loop: false,
+            controls: true,
+            loop: true,
             infinite: false,
             snap: false,
             vertical: false
@@ -71,7 +75,7 @@ export default class TestCarousel extends React.Component {
             <div className="test__toggle">
                 <input
                     type="checkbox"
-                    value={val}
+                    defaultChecked={val}
                     onChange={e => {
                         this.toggleBoolOption(name)
                     }}

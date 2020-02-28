@@ -12,7 +12,8 @@ const defaultState = {
     availableSize: null,
     slidesTotalSize: null,
     autoSliding: false,
-    clones: null
+    clones: null,
+    isLooping: false
 }
 
 export default class Carousel extends React.Component {
@@ -309,13 +310,20 @@ export default class Carousel extends React.Component {
                         const autoswipe =
                             slidePositions[currentIndex].start -
                             slidePositions[idx].start
-                        const speed = Math.round(Math.abs(autoswipe) * 1.5)
+                        const speed = Math.round(Math.abs(autoswipe) * 0.25)
                         this.setState(
-                            { currentIndex: idx, swiping: autoswipe },
+                            {
+                                currentIndex: idx,
+                                swiping: autoswipe,
+                                isLooping: true
+                            },
                             () => {
                                 this.snapTimeout = setTimeout(() => {
-                                    this.autoSlide({ swiping: 0 }, speed)
-                                }, 10)
+                                    this.autoSlide(
+                                        { swiping: 0, isLooping: false },
+                                        speed
+                                    )
+                                }, 300)
                             }
                         )
                     } else {
@@ -379,6 +387,7 @@ export default class Carousel extends React.Component {
     }
 
     autoSlide(nextState, speed) {
+        const { isLooping } = this.state
         let resetSpeed = false
         if (speed) {
             resetSpeed = this.autoSlideSpeed
@@ -387,6 +396,12 @@ export default class Carousel extends React.Component {
         // helper method to ensure trasition-duration is set during sliding
         // only intended for state changes to state.currentIndex or state.swiping
         this.setState({ autoSliding: true }, () => {
+            if (isLooping && !nextState.isLooping) {
+                delete nextState.isLooping
+                this.fadeTimeout = setTimeout(() => {
+                    this.setState({ isLooping: false })
+                }, 250)
+            }
             this.setState(nextState, () => {
                 this.transitionTimeout = setTimeout(() => {
                     this.setState({ autoSliding: false }, () => {
@@ -502,7 +517,8 @@ export default class Carousel extends React.Component {
             fixedSlideSize,
             swiping,
             slidePositions,
-            autoSliding
+            autoSliding,
+            isLooping
         } = this.state
 
         const style = {}
@@ -521,7 +537,15 @@ export default class Carousel extends React.Component {
         const y = (vertical && -pos) || 0
 
         style.transform = `translate3d(${x}px, ${y}px, 0px)`
-        if (autoSliding) style.transitionDuration = this.autoSlideSpeed + "ms"
+        style.transition = `transform ${this.autoSlideSpeed}ms, filter 250ms, -webkit-filter 250ms`
+
+        if (isLooping) {
+            style.filter = "blur(10px)"
+            style.webkitFilter = "blur(10px)"
+        } else {
+            style.filter = "none"
+            style.webkitFilter = "none"
+        }
 
         return style
     }
@@ -556,7 +580,12 @@ export default class Carousel extends React.Component {
                 {controls && (
                     <button
                         type="button"
-                        className="carousel__control--prev"
+                        className={
+                            "carousel__control " +
+                            (vertical
+                                ? "carousel__control--up"
+                                : "carousel__control--left")
+                        }
                         onClick={this.prev}
                     >
                         Forrige
@@ -630,7 +659,12 @@ export default class Carousel extends React.Component {
                 {controls && (
                     <button
                         type="button"
-                        className="carousel__control--next"
+                        className={
+                            "carousel__control " +
+                            (vertical
+                                ? "carousel__control--down"
+                                : "carousel__control--right")
+                        }
                         onClick={this.next}
                     >
                         Neste
