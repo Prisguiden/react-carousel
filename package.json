@@ -26,7 +26,9 @@
   "devDependencies": {
     "@babel/cli": "^7.8.4",
     "@babel/core": "^7.8.4",
-    "@babel/preset-react": "^7.8.3"
+    "@babel/preset-react": "^7.8.3",
+    "eslint": "^6.8.0",
+    "eslint-plugin-react": "^7.18.3"
   },
   "dependencies": {
     "prop-types": "^15.7.2",
@@ -38,8 +40,12 @@
   },
   "homepage": "https://github.com/Prisguiden/react-carousel",
   "main": "./dist/index.js",
+  "prettier": {
+    "semi": false
+  },
   "scripts": {
     "build": "babel ./src -d ./dist",
+    "watch": "babel --watch --verbose ./src -d ./dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   }
 }
