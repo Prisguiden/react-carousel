@@ -52,6 +52,15 @@ a {
   border-radius: 0.3rem;
 }
 
+.test-carousel__carousel {
+  border: thin solid blue;
+  margin: 1.5rem auto;
+  border-radius: 0.3rem;
+  height: 400px;
+  width: 100%;
+}
+
+
 .test-carousel__actions button {
   font-size: 1.6rem;
   margin: 0.5rem;

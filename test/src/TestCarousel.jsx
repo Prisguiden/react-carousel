@@ -119,7 +119,7 @@ export default class TestCarousel extends React.Component {
                     {this.renderToggle("vertical")}
                     <button onClick={this.runTest}>Test your func</button>
                 </section>
-                <section>
+                <section className="test-carousel__carousel">
                     {reloading ? (
                         <p>Reloading...</p>
                     ) : (
