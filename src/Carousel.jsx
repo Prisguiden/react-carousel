@@ -82,7 +82,7 @@ export default class Carousel extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        const updateParent = this.props.onChangeIndex
+        const { onChangeIndex } = this.props
         const { children } = this.props
         var oldKeys = JSON.stringify(prevProps.children.map(child => child.key))
         var newKeys = JSON.stringify(children.map(child => child.key))
@@ -102,7 +102,7 @@ export default class Carousel extends React.Component {
             this.setState({ ...defaultState })
         }
 
-        if (typeof updateParent == "function") {
+        if (typeof onChangeIndex == "function") {
             // the carousels currentIndex is tracked/controlled by an ancestor.
             const { infinite } = this.props
             const pidx = this.props.currentIndex
@@ -127,7 +127,7 @@ export default class Carousel extends React.Component {
             if (idx != prevState.currentIndex && pidx != realIdx) {
                 // the index is tracked by an ancestor.
                 // this component changed current slide - update the parent
-                updateParent(realIdx)
+                onChangeIndex(realIdx)
             }
         }
     }
@@ -200,10 +200,11 @@ export default class Carousel extends React.Component {
             // need to set each slides size + start
             // this could not calculate on setItemRef
             slidePositions = this.slideRefs.map((item, index) => {
-                return Object.assign({}, item, {
+                return {
+                    ...item,
                     size: fixedSlideSize,
                     start: fixedSlideSize * index
-                })
+                }
             })
         } else {
             slidePositions = this.slideRefs
@@ -219,10 +220,11 @@ export default class Carousel extends React.Component {
             let nextIdx = 0
             for (let i = 1; i <= 3; i++) {
                 slidePositions.forEach((slide, index) => {
-                    extendedSlidePositions[nextIdx] = Object.assign({}, slide, {
+                    extendedSlidePositions[nextIdx] = {
+                        ...slide,
                         index: nextIdx,
                         start: nextStart
-                    })
+                    }
                     clones[nextIdx] = React.cloneElement(children[index])
                     nextIdx += 1
                     nextStart = nextStart + slide.size
