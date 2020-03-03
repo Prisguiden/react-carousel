@@ -330,7 +330,8 @@ export default class Carousel extends React.Component {
             // LOOP MODE - jumping between first-last
             // OR a controlled (non-infinite) component is told to swipe more than one slide
             const autoswipe = slidePositions[currentIndex].start - slidePositions[idx].start;
-            const speed = Math.round(Math.abs(autoswipe) * 0.25);
+            const speed = 0; //Math.round(Math.abs(autoswipe) * 0.25)
+
             this.setState({
               currentIndex: idx,
               swiping: autoswipe,
@@ -341,7 +342,7 @@ export default class Carousel extends React.Component {
                   swiping: 0,
                   isLooping: false
                 }, speed);
-              }, 300);
+              }, 160);
             });
           } else {
             // INFINITE MODE
@@ -589,15 +590,17 @@ export default class Carousel extends React.Component {
     if (isDragging) {
       style.transition = "none";
     } else {
-      style.transition = `transform ${this.autoSlideSpeed}ms, filter 250ms, -webkit-filter 250ms`;
+      style.transition = `transform ${this.autoSlideSpeed}ms, filter 150ms, -webkit-filter 150ms, opacity 150ms`;
     }
 
     if (isLooping) {
-      style.filter = "blur(10px)";
-      style.webkitFilter = "blur(10px)";
+      style.filter = "blur(8px)";
+      style.webkitFilter = "blur(8px)";
+      style.opacity = 0;
     } else {
       style.filter = "none";
       style.webkitFilter = "none";
+      style.opacity = 1;
     }
 
     return style;
