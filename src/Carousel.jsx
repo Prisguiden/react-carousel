@@ -13,7 +13,8 @@ const defaultState = {
     slidesTotalSize: null,
     autoSliding: false,
     clones: null,
-    isLooping: false
+    isLooping: false,
+    isDragging: false
 }
 
 export default class Carousel extends React.Component {
@@ -283,13 +284,13 @@ export default class Carousel extends React.Component {
             } else {
                 let spacewarp = 0 // direction to swipe in
 
-                if (idx > currentIndex && idx > currentIndex + 1) {
+                if (idx > currentIndex + 1) {
                     // swiping forward more than one
                     // OR jumping forward into a later set of clones
                     // OR looping (backwards) from first to last
                     spacewarp = 1
                 }
-                if (idx < currentIndex && idx < currentIndex - 1) {
+                if (idx < currentIndex - 1) {
                     // swiping backwards more than one
                     // OR jumping backwards into an earlier set of clones
                     // OR or looping (forwards) from last to first
@@ -332,19 +333,17 @@ export default class Carousel extends React.Component {
                         // need to add information about what direction the swipe actually had
                         // using spacewarp direction as swipe directions is unreliable
 
-                        const x = currentIndex
-                        const y = slidesCount
                         let singleStep = false
                         if (
-                            x == idx + 1 ||
-                            x == idx + y + 1 ||
-                            x == idx - y + 1
+                            currentIndex == idx + 1 ||
+                            currentIndex == idx + slidesCount + 1 ||
+                            currentIndex == idx - slidesCount + 1
                         )
                             singleStep = true
                         if (
-                            x == idx - 1 ||
-                            x == idx + y - 1 ||
-                            x == idx - y - 1
+                            currentIndex == idx - 1 ||
+                            currentIndex == idx + slidesCount - 1 ||
+                            currentIndex == idx - slidesCount - 1
                         )
                             singleStep = true
 
@@ -467,6 +466,7 @@ export default class Carousel extends React.Component {
     onSwipeDrag(eventData) {
         const { vertical } = this.props
         this.setState({
+            isDragging: true,
             swiping: vertical ? eventData.deltaY : eventData.deltaX
         })
     }
@@ -501,13 +501,16 @@ export default class Carousel extends React.Component {
                 index = index - slidesCount
             }
         }
-        this.setState({ currentIndex: index, swiping: diff }, () => {
-            if (snap) {
-                this.snapTimeout = setTimeout(() => {
-                    this.autoSlide({ swiping: 0 })
-                }, 10)
+        this.setState(
+            { currentIndex: index, swiping: diff, isDragging: false },
+            () => {
+                if (snap) {
+                    this.snapTimeout = setTimeout(() => {
+                        this.autoSlide({ swiping: 0 })
+                    }, 10)
+                }
             }
-        })
+        )
     }
 
     getTransform() {
@@ -518,7 +521,8 @@ export default class Carousel extends React.Component {
             swiping,
             slidePositions,
             autoSliding,
-            isLooping
+            isLooping,
+            isDragging
         } = this.state
 
         const style = {}
@@ -537,7 +541,11 @@ export default class Carousel extends React.Component {
         const y = (vertical && -pos) || 0
 
         style.transform = `translate3d(${x}px, ${y}px, 0px)`
-        style.transition = `transform ${this.autoSlideSpeed}ms, filter 250ms, -webkit-filter 250ms`
+        if (isDragging) {
+            style.transition = "none"
+        } else {
+            style.transition = `transform ${this.autoSlideSpeed}ms, filter 250ms, -webkit-filter 250ms`
+        }
 
         if (isLooping) {
             style.filter = "blur(10px)"
