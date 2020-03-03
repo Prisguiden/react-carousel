@@ -342,7 +342,7 @@ export default class Carousel extends React.Component {
                   swiping: 0,
                   isLooping: false
                 }, speed);
-              }, 210);
+              }, 150);
             });
           } else {
             // INFINITE MODE
@@ -590,12 +590,12 @@ export default class Carousel extends React.Component {
     if (isDragging) {
       style.transition = "none";
     } else {
-      style.transition = `transform ${this.autoSlideSpeed}ms, filter 100ms, -webkit-filter 100ms, opacity 100ms ease-in 100ms`;
+      style.transition = `transform ${this.autoSlideSpeed}ms, filter 150ms ease-out, -webkit-filter 150ms ease-out, opacity 150ms ease-out`;
     }
 
     if (isLooping) {
-      style.filter = "blur(2px)";
-      style.webkitFilter = "blur(2px)";
+      style.filter = "blur(1px)";
+      style.webkitFilter = "blur(1px)";
       style.opacity = 0;
     } else {
       style.filter = "none";
