@@ -6,6 +6,7 @@ export default class TestCarousel extends React.Component {
         super(props)
 
         this.state = {
+            currentSlide: 0,
             items: [
                 { id: 1, content: "slide1" },
                 { id: 2, content: "slide2" },
@@ -30,6 +31,7 @@ export default class TestCarousel extends React.Component {
         this.toggleBoolOption = this.toggleBoolOption.bind(this)
         this.renderToggle = this.renderToggle.bind(this)
         this.reloadCarousel = this.reloadCarousel.bind(this)
+        this.updateCurrentSlide = this.updateCurrentSlide.bind(this)
         this.runTest = this.runTest.bind(this)
     }
 
@@ -40,7 +42,6 @@ export default class TestCarousel extends React.Component {
             (loop !== prevState.loop || infinite !== prevState.infinite)
         ) {
             // loop & infinite props does not support "hotswapping" need to reload the Carousel
-            console.log("reloading", this.isReloading)
             this.isReloading = true
             this.reloadCarousel()
         }
@@ -51,15 +52,17 @@ export default class TestCarousel extends React.Component {
     }
 
     reloadCarousel() {
-        console.log("we are reloading")
         this.setState({ reloading: true }, () => {
             this.reloadTimeout = setTimeout(() => {
-                console.log("done reloading")
                 this.setState({ reloading: false }, () => {
                     this.isReloading = false
                 })
             }, 500)
         })
+    }
+
+    updateCurrentSlide(index) {
+        this.setState({ currentSlide: index })
     }
 
     toggleBoolOption(optionName) {
@@ -99,6 +102,7 @@ export default class TestCarousel extends React.Component {
 
     render() {
         const {
+            currentSlide,
             items,
             reloading,
             slides,
@@ -123,25 +127,54 @@ export default class TestCarousel extends React.Component {
                     {reloading ? (
                         <p>Reloading...</p>
                     ) : (
-                        <Carousel
-                            slides={slides}
-                            controls={controls}
-                            loop={loop}
-                            infinite={infinite}
-                            snap={snap}
-                            vertical={vertical}
-                        >
-                            {items.map((slide, index) => {
-                                return (
-                                    <div
-                                        className="test-carousel__slide"
-                                        key={slide.id}
-                                    >
-                                        {slide.content}
-                                    </div>
-                                )
-                            })}
-                        </Carousel>
+                        <>
+                            <div className="main">
+                                <Carousel
+                                    slides={3}
+                                    controls={controls}
+                                    loop={false}
+                                    infinite={true}
+                                    snap={snap}
+                                    vertical={vertical}
+                                    currentIndex={currentSlide}
+                                    onChangeIndex={this.updateCurrentSlide}
+                                >
+                                    {items.map((slide, index) => {
+                                        return (
+                                            <div
+                                                className="test-carousel__slide"
+                                                key={slide.id}
+                                            >
+                                                {slide.content}
+                                            </div>
+                                        )
+                                    })}
+                                </Carousel>
+                            </div>
+                            <div className="thumbs">
+                                <Carousel
+                                    slides={slides}
+                                    controls={controls}
+                                    loop={true}
+                                    infinite={false}
+                                    snap={snap}
+                                    vertical={vertical}
+                                    currentIndex={currentSlide}
+                                    onChangeIndex={this.updateCurrentSlide}
+                                >
+                                    {items.map((slide, index) => {
+                                        return (
+                                            <div
+                                                className="test-carousel__slide"
+                                                key={slide.id}
+                                            >
+                                                {slide.content}
+                                            </div>
+                                        )
+                                    })}
+                                </Carousel>
+                            </div>
+                        </>
                     )}
                 </section>
             </div>

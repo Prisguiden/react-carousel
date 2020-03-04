@@ -105,29 +105,33 @@ export default class Carousel extends React.Component {
         if (typeof onChangeIndex == "function") {
             // the carousels currentIndex is tracked/controlled by an ancestor.
             const { infinite } = this.props
-            const pidx = this.props.currentIndex
-            const idx = this.state.currentIndex
-            // infinite carousels allways use indexes belonging to a duplicate set above the original one
-            let realIdx = idx
-            if (infinite && idx >= children.length * 2) {
-                realIdx = idx - children.length
-            } else if (infinite && idx <= children.length) {
-                realIdx = idx + children.length
+            const propsIndex = this.props.currentIndex
+            const stateIndex = this.state.currentIndex
+
+            let realStateIndex = stateIndex
+            if (infinite) {
+                // infinite carousels allways use indexes belonging to a duplicate set above the original one
+                if (realStateIndex >= children.length) {
+                    realStateIndex = stateIndex - children.length
+                }
             }
 
             if (
-                typeof pidx != "undefined" &&
-                prevProps.currentIndex != pidx &&
-                pidx != realIdx
+                typeof propsIndex != "undefined" &&
+                prevProps.currentIndex != propsIndex &&
+                propsIndex != realStateIndex
             ) {
                 // parent component tells us to change current index
-                this.changeCurrentIndex(pidx) // will handle infinite quirks
+                this.changeCurrentIndex(propsIndex) // will handle infinite quirks
             }
 
-            if (idx != prevState.currentIndex && pidx != realIdx) {
+            if (
+                stateIndex != prevState.currentIndex &&
+                propsIndex != realStateIndex
+            ) {
                 // the index is tracked by an ancestor.
                 // this component changed current slide - update the parent
-                onChangeIndex(realIdx)
+                onChangeIndex(realStateIndex)
             }
         }
     }
@@ -551,11 +555,11 @@ export default class Carousel extends React.Component {
 
         if (isLooping) {
             style.filter = "blur(1px)"
-            style.webkitFilter = "blur(1px)"
+            style.WebkitFilter = "blur(1px)"
             style.opacity = 0
         } else {
             style.filter = "none"
-            style.webkitFilter = "none"
+            style.WebkitFilter = "none"
             style.opacity = 1
         }
 
