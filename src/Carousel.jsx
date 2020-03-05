@@ -269,6 +269,7 @@ export default class Carousel extends React.Component {
         const { infinite, loop, children } = this.props
         const { currentIndex, slidePositions } = this.state
         const slidesCount = children.length
+
         let idx = index
         if (infinite) {
             // might need to update to a more fitting (clone) index
@@ -277,115 +278,78 @@ export default class Carousel extends React.Component {
                 idx = slidesCount + index
             }
             if (index >= slidesCount * 2) {
-                idx = index - children.length
+                idx = index - slidesCount
             }
         }
 
-        // Figure out if we should play somekind of autoslide transition
         if (idx != currentIndex) {
-            if (!infinite && !loop) {
-                // NO INFINITE OR LOOP - SHOULD STILL CHANGE INDEX REGARDLESS
+            // Figure out if we should play somekind of autoslide transition
+            if (
+                (!infinite && !loop) ||
+                (idx == currentIndex + 1 || idx == currentIndex - 1)
+            ) {
+                // NO INFINITE OR LOOP
+                // OR regular step +/- just one slide changed
                 // other methods calling this function prevents going beyond available index
                 this.autoSlide({ currentIndex: idx })
             } else {
-                let spacewarp = 0 // direction to swipe in
+                // WELCOME TO THE DANGERZONE! WE ARE SPECEWARPING INTO HYPERSPACE
 
-                if (idx > currentIndex + 1) {
-                    // swiping forward more than one
-                    // OR jumping forward into a later set of clones
-                    // OR looping (backwards) from first to last
-                    spacewarp = 1
+                // figure out if infinite carousel is still just changing +/- 1 slide (but shifting between clone-sets)
+                let infiniteSingleStep = 0
+                if (infinite) {
+                    if (
+                        currentIndex == idx + 1 ||
+                        currentIndex == idx + slidesCount + 1 ||
+                        currentIndex == idx - slidesCount + 1
+                    )
+                        infiniteSingleStep = 1
+                    if (
+                        currentIndex == idx - 1 ||
+                        currentIndex == idx + slidesCount - 1 ||
+                        currentIndex == idx - slidesCount - 1
+                    )
+                        infiniteSingleStep = -1
                 }
-                if (idx < currentIndex - 1) {
-                    // swiping backwards more than one
-                    // OR jumping backwards into an earlier set of clones
-                    // OR or looping (forwards) from last to first
-                    spacewarp = -1
-                }
 
-                if (spacewarp == 0) {
-                    // regular step; +/- one index changed
-                    // nothing unique happes for loop/infinite here
-                    this.autoSlide({ currentIndex: idx })
-                } else {
-                    // WELCOME TO THE DANGERZONE! WE ARE SPECEWARPING INTO HYPERSPACE
-                    // loop and infinite tackle this their own way
-
-                    if (!infinite) {
-                        // LOOP MODE - jumping between first-last
-                        // OR a controlled (non-infinite) component is told to swipe more than one slide
-                        const autoswipe =
-                            slidePositions[currentIndex].start -
-                            slidePositions[idx].start
-                        const speed = 0 //Math.round(Math.abs(autoswipe) * 0.25)
-                        this.setState(
-                            {
-                                currentIndex: idx,
-                                swiping: autoswipe,
-                                isLooping: true
-                            },
-                            () => {
-                                this.snapTimeout = setTimeout(() => {
-                                    this.autoSlide(
-                                        { swiping: 0, isLooping: false },
-                                        speed
-                                    )
-                                }, 150)
-                            }
-                        )
-                    } else {
-                        // INFINITE MODE
-                        // TODO: IMPROVE! - ALGORITHM FOR DIRECTION NOT OPTIMAL ON INFINITE SCROLLS
-                        // need to add information about what direction the swipe actually had
-                        // using spacewarp direction as swipe directions is unreliable
-
-                        let singleStep = false
-                        if (
-                            currentIndex == idx + 1 ||
-                            currentIndex == idx + slidesCount + 1 ||
-                            currentIndex == idx - slidesCount + 1
-                        )
-                            singleStep = true
-                        if (
-                            currentIndex == idx - 1 ||
-                            currentIndex == idx + slidesCount - 1 ||
-                            currentIndex == idx - slidesCount - 1
-                        )
-                            singleStep = true
-
-                        if (singleStep) {
-                            // only changing index by one slide
-                            // BUT jumping between first/last item to facilitate infinite scroll
-                            // postitive spacewarp value means going forwards
-                            const autoSwipingItemId =
-                                idx < currentIndex ? idx - 1 : idx
-                            const dist = slidePositions[autoSwipingItemId].size
-                            const autoswipe = spacewarp == 1 ? dist : -dist
-                            this.setState(
-                                { currentIndex: idx, swiping: autoswipe },
-                                () => {
-                                    this.snapTimeout = setTimeout(() => {
-                                        this.autoSlide({ swiping: 0 })
-                                    }, 10)
-                                }
-                            )
-                        } else {
-                            // we have been told to move by more than one slide
-                            // this only happens for controlled components when parent changes this.props.currentIndex
-                            const forward = !!(spacewarp > 0)
-                            const autoSwipingItemId = forward ? idx - 1 : idx
-                            const dist = slidePositions[autoSwipingItemId].size
-                            const autoswipe = forward ? -dist : dist
-                            this.setState(
-                                { currentIndex: idx, swiping: autoswipe },
-                                () => {
-                                    this.snapTimeout = setTimeout(() => {
-                                        this.autoSlide({ swiping: 0 })
-                                    }, 10)
-                                }
-                            )
+                if (infiniteSingleStep == 0) {
+                    // jumping more than one slide
+                    // OR jumping between first-last in loop mode
+                    const autoswipe =
+                        slidePositions[currentIndex].start -
+                        slidePositions[idx].start
+                    //const speed = Math.round(Math.abs(autoswipe) * 0.25)
+                    const speed = 0
+                    this.setState(
+                        {
+                            currentIndex: idx,
+                            swiping: autoswipe,
+                            isLooping: true
+                        },
+                        () => {
+                            this.snapTimeout = setTimeout(() => {
+                                this.autoSlide(
+                                    { swiping: 0, isLooping: false },
+                                    speed
+                                )
+                            }, 150)
                         }
-                    }
+                    )
+                } else {
+                    // only changing index by one slide
+                    // BUT jumping between first/last item to facilitate infinite scroll
+                    // postitive infiniteSingleStep value means going forwards
+                    const autoSwipingItemId = idx < currentIndex ? idx - 1 : idx
+                    const dist = slidePositions[autoSwipingItemId].size
+                    const autoswipe = infiniteSingleStep == 1 ? dist : -dist
+                    this.setState(
+                        { currentIndex: idx, swiping: autoswipe },
+                        () => {
+                            this.snapTimeout = setTimeout(() => {
+                                this.autoSlide({ swiping: 0 })
+                            }, 50)
+                        }
+                    )
                 }
             }
         }
@@ -549,7 +513,7 @@ export default class Carousel extends React.Component {
         style.transform = `translate3d(${x}px, ${y}px, 0px)`
         if (isDragging) {
             style.transition = "none"
-        } else {
+        } else if (autoSliding || isLooping) {
             style.transition = `transform ${this.autoSlideSpeed}ms, filter 150ms ease-out, -webkit-filter 150ms ease-out, opacity 150ms ease-out`
         }
 

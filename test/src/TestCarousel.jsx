@@ -157,7 +157,7 @@ export default class TestCarousel extends React.Component {
                                     controls={controls}
                                     loop={true}
                                     infinite={false}
-                                    snap={snap}
+                                    snap={true}
                                     vertical={vertical}
                                     currentIndex={currentSlide}
                                     onChangeIndex={this.updateCurrentSlide}
