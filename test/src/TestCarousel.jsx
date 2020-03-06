@@ -16,7 +16,9 @@ export default class TestCarousel extends React.Component {
                 { id: 6, content: "slide6" },
                 { id: 7, content: "slide7" },
                 { id: 8, content: "slide8" },
-                { id: 9, content: "slide9" }
+                { id: 9, content: "slide9" },
+                { id: 10, content: "slide10" },
+                { id: 11, content: "slide11" }
             ],
             reloading: false,
             slides: "auto",
@@ -138,6 +140,7 @@ export default class TestCarousel extends React.Component {
                                     vertical={vertical}
                                     currentIndex={currentSlide}
                                     onChangeIndex={this.updateCurrentSlide}
+                                    swipeMode="step"
                                 >
                                     {items.map((slide, index) => {
                                         return (
@@ -161,6 +164,7 @@ export default class TestCarousel extends React.Component {
                                     vertical={vertical}
                                     currentIndex={currentSlide}
                                     onChangeIndex={this.updateCurrentSlide}
+                                    swipeMode="step"
                                 >
                                     {items.map((slide, index) => {
                                         return (

@@ -25,9 +25,6 @@
   cursor: -moz-grabbing;
   cursor: -webkit-grabbing;
 }
-.carousel-swipe-wrapper .carousel--transition-delay {
-  transition-duration: 300ms;
-}
 .carousel, .carousel--vertical {
   width: 100%;
   height: 100%;

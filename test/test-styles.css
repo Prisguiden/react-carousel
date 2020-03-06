@@ -39,6 +39,15 @@ a {
   color: rgba(206, 160, 244, 1);
 }
 
+.carousel__slide--current {
+    font-size: 1.2em;
+    font-weight: 700;
+}
+
+.carousel__slide--current .test-carousel__slide {
+    border-color: black;
+}
+
 .test-carousel {
   background-color: white;
   border: thin solid rgba(206, 160, 244, 1);

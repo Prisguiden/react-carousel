@@ -49,6 +49,7 @@ export default class Carousel extends React.Component {
     this.setCarouselRef = this.setCarouselRef.bind(this);
     this.setItemRef = this.setItemRef.bind(this);
     this.getTransform = this.getTransform.bind(this);
+    this.calculateCarouselOffset = this.calculateCarouselOffset.bind(this);
     this.prev = this.prev.bind(this);
     this.next = this.next.bind(this);
     this.changeCurrentIndex = this.changeCurrentIndex.bind(this);
@@ -271,7 +272,8 @@ export default class Carousel extends React.Component {
     const {
       infinite,
       loop,
-      children
+      children,
+      swipeMode
     } = this.props;
     const {
       currentIndex,
@@ -292,6 +294,8 @@ export default class Carousel extends React.Component {
       }
     }
 
+    const nextOffset = !infinite && swipeMode == "step" ? this.calculateCarouselOffset(idx) : 0;
+
     if (idx != currentIndex) {
       // Figure out if we should play somekind of autoslide transition
       if (!infinite && !loop || idx == currentIndex + 1 || idx == currentIndex - 1) {
@@ -299,7 +303,8 @@ export default class Carousel extends React.Component {
         // OR regular step +/- just one slide changed
         // other methods calling this function prevents going beyond available index
         this.autoSlide({
-          currentIndex: idx
+          currentIndex: idx,
+          offset: nextOffset
         });
       } else {
         // WELCOME TO THE DANGERZONE! WE ARE SPECEWARPING INTO HYPERSPACE
@@ -320,7 +325,8 @@ export default class Carousel extends React.Component {
           this.setState({
             currentIndex: idx,
             swiping: autoswipe,
-            isLooping: true
+            isLooping: true,
+            offset: nextOffset
           }, () => {
             this.snapTimeout = setTimeout(() => {
               this.autoSlide({
@@ -338,7 +344,8 @@ export default class Carousel extends React.Component {
           const autoswipe = infiniteSingleStep == 1 ? dist : -dist;
           this.setState({
             currentIndex: idx,
-            swiping: autoswipe
+            swiping: autoswipe,
+            offset: nextOffset
           }, () => {
             this.snapTimeout = setTimeout(() => {
               this.autoSlide({
@@ -352,6 +359,9 @@ export default class Carousel extends React.Component {
   }
 
   autoSlide(nextState, speed) {
+    const {
+      swipeMode
+    } = this.props;
     const {
       isLooping
     } = this.state;
@@ -367,16 +377,20 @@ export default class Carousel extends React.Component {
     this.setState({
       autoSliding: true
     }, () => {
+      // start autoslide sequence
       if (isLooping && !nextState.isLooping) {
+        // await stopping isLooping by breaking it out in its own, delayed setState
         delete nextState.isLooping;
         this.fadeTimeout = setTimeout(() => {
           this.setState({
             isLooping: false
           });
         }, 250);
-      }
+      } // set the next state (perform the autoSlide)
+
 
       this.setState(nextState, () => {
+        // stop autoSliding when the animations has completed
         this.transitionTimeout = setTimeout(() => {
           this.setState({
             autoSliding: false
@@ -388,6 +402,52 @@ export default class Carousel extends React.Component {
         }, this.autoSlideSpeed);
       });
     });
+  }
+
+  calculateCarouselOffset(slideIndex) {
+    const {
+      slidePositions
+    } = this.state;
+    const currentOffset = this.state.offset;
+    let offset = currentOffset; // specialcase for step mode - we need to figure out if a translate offset is needed
+
+    if (typeof slideIndex != "undefined") {
+      // perform translate if there is no further items
+      // translate by size of the item to dissapear from view
+      const currentSlide = slidePositions[slideIndex];
+      const nextSlide = slideIndex + 1 in slidePositions && slidePositions[slideIndex + 1];
+      const previousSlide = slideIndex - 1 in slidePositions && slidePositions[slideIndex - 1];
+      const currentEnd = this.availableSize - offset;
+
+      if (this.availableSize < currentSlide.size * 3) {
+        // the carousel is not big enough to show prev + next. Just adjust offset to show current slide
+        offset = currentSlide.start;
+      } else {
+        // adjust offset so that pevious and next slide is allways visible
+        if (!nextSlide) {
+          // we have reached the end of carousel
+          // set offset so that currentSlide is fully visible
+          offset = currentSlide.start + currentSlide.size - this.availableSize;
+        } else {
+          if (!previousSlide) {
+            // we have reaced the beginning of carousel
+            // set offset so that currentSlide is fully visible
+            offset = 0;
+          } else {
+            // we are in-between beginning/end
+            if (nextSlide.start + nextSlide.size > currentEnd) {
+              // next slide is out of view
+              offset = nextSlide.start + nextSlide.size - this.availableSize;
+            } else if (previousSlide.start < offset) {
+              // previous slide is out of view
+              offset = previousSlide.start;
+            }
+          }
+        }
+      }
+    }
+
+    return offset;
   } // EVENT CALLBACK METHODS USED IN RENDER
 
 
@@ -519,10 +579,13 @@ export default class Carousel extends React.Component {
 
   getTransform() {
     const {
-      vertical
+      vertical,
+      swipeMode,
+      infinite
     } = this.props;
     const {
       currentIndex,
+      offset,
       fixedSlideSize,
       swiping,
       slidePositions,
@@ -531,18 +594,6 @@ export default class Carousel extends React.Component {
       isDragging
     } = this.state;
     const style = {};
-    let pos;
-
-    if (fixedSlideSize) {
-      pos = fixedSlideSize * currentIndex;
-    } else {
-      pos = slidePositions[currentIndex] && slidePositions[currentIndex].start || 0;
-    }
-
-    pos += swiping;
-    const x = !vertical && -pos || 0;
-    const y = vertical && -pos || 0;
-    style.transform = `translate3d(${x}px, ${y}px, 0px)`;
 
     if (isDragging) {
       style.transition = "none";
@@ -560,6 +611,26 @@ export default class Carousel extends React.Component {
       style.opacity = 1;
     }
 
+    let pos = 0;
+
+    if (!infinite && swipeMode == "step") {
+      // in this mode we dont change translate before next slide after/before currentIndex is the last fully visible one
+      // this translate-value is set to state on this.autoSlide (setCurrentIndex allways calls that method) so we don't need to calcualte it here
+      pos = offset + swiping;
+    } else {
+      // translate so that currentIndex is allways the first visible slide
+      if (fixedSlideSize) {
+        pos = fixedSlideSize * currentIndex;
+      } else {
+        pos = slidePositions[currentIndex] && slidePositions[currentIndex].start || 0;
+      }
+
+      pos += swiping;
+    }
+
+    const x = !vertical && -pos || 0;
+    const y = vertical && -pos || 0;
+    style.transform = `translate3d(${x}px, ${y}px, 0px)`;
     return style;
   }
 
@@ -595,7 +666,7 @@ export default class Carousel extends React.Component {
       onSwiped: swipeMode == "drag" ? this.onSwipeDragDone : null
     }, this.swipeConfig), React.createElement("div", {
       ref: this.setCarouselRef,
-      className: "carousel" + (vertical ? " carousel--vertical" : "") + (swipeMode == "step" ? " carousel--transition-delay" : ""),
+      className: "carousel" + (vertical ? " carousel--vertical" : ""),
       style: transformStyle
     }, !clones && children.map((item, index) => {
       return React.createElement(CarouselSlide, {
@@ -621,14 +692,14 @@ export default class Carousel extends React.Component {
 
 }
 Carousel.defaultProps = {
-  snap: true,
-  infinite: true,
-  vertical: false,
-  loop: true,
   slides: "auto",
-  swipeMode: "drag",
+  swipeMode: "step",
+  snap: true,
+  loop: true,
+  infinite: false,
+  vertical: false,
   keyboard: false,
-  controls: true
+  controls: false
 };
 Carousel.propTypes = {
   className: PropTypes.string,
