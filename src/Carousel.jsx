@@ -659,10 +659,24 @@ export default class Carousel extends React.Component {
                 <Swipeable
                     className="carousel-swipe-wrapper"
                     onSwipedLeft={
-                        swipeMode == "step" ? this.onSwipedLeft : null
+                        !vertical && swipeMode == "step"
+                            ? this.onSwipedLeft
+                            : null
                     }
                     onSwipedRight={
-                        swipeMode == "step" ? this.onSwipedRight : null
+                        !vertical && swipeMode == "step"
+                            ? this.onSwipedRight
+                            : null
+                    }
+                    onSwipedUp={
+                        vertical && swipeMode == "step"
+                            ? this.onSwipedLeft
+                            : null
+                    }
+                    onSwipedDown={
+                        vertical && swipeMode == "step"
+                            ? this.onSwipedRight
+                            : null
                     }
                     onSwiping={swipeMode == "drag" ? this.onSwipeDrag : null}
                     onSwiped={swipeMode == "drag" ? this.onSwipeDragDone : null}

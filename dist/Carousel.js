@@ -660,8 +660,10 @@ export default class Carousel extends React.Component {
       onClick: this.prev
     }, "Forrige"), React.createElement(Swipeable, _extends({
       className: "carousel-swipe-wrapper",
-      onSwipedLeft: swipeMode == "step" ? this.onSwipedLeft : null,
-      onSwipedRight: swipeMode == "step" ? this.onSwipedRight : null,
+      onSwipedLeft: !vertical && swipeMode == "step" ? this.onSwipedLeft : null,
+      onSwipedRight: !vertical && swipeMode == "step" ? this.onSwipedRight : null,
+      onSwipedUp: vertical && swipeMode == "step" ? this.onSwipedLeft : null,
+      onSwipedDown: vertical && swipeMode == "step" ? this.onSwipedRight : null,
       onSwiping: swipeMode == "drag" ? this.onSwipeDrag : null,
       onSwiped: swipeMode == "drag" ? this.onSwipeDragDone : null
     }, this.swipeConfig), React.createElement("div", {
