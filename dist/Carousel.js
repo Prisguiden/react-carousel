@@ -319,22 +319,31 @@ export default class Carousel extends React.Component {
         if (infiniteSingleStep == 0) {
           // jumping more than one slide
           // OR jumping between first-last in loop mode
-          const autoswipe = slidePositions[currentIndex].start - slidePositions[idx].start; //const speed = Math.round(Math.abs(autoswipe) * 0.25)
+          const totalSlidesSize = slidePositions[slidesCount - 1].start + slidePositions[slidesCount - 1].size;
 
-          const speed = 0;
-          this.setState({
-            currentIndex: idx,
-            swiping: autoswipe,
-            isLooping: true,
-            offset: nextOffset
-          }, () => {
-            this.snapTimeout = setTimeout(() => {
-              this.autoSlide({
-                swiping: 0,
-                isLooping: false
-              }, speed);
-            }, 150);
-          });
+          if (!infinite && swipeMode == "step" && this.availableSize > totalSlidesSize) {
+            // prevent playing loop animation; all slides are visible at all times
+            this.autoSlide({
+              currentIndex: idx
+            });
+          } else {
+            const autoswipe = slidePositions[currentIndex].start - slidePositions[idx].start; //const speed = Math.round(Math.abs(autoswipe) * 0.25)
+
+            const speed = 0;
+            this.setState({
+              currentIndex: idx,
+              swiping: autoswipe,
+              isLooping: true,
+              offset: nextOffset
+            }, () => {
+              this.snapTimeout = setTimeout(() => {
+                this.autoSlide({
+                  swiping: 0,
+                  isLooping: false
+                }, speed);
+              }, 150);
+            });
+          }
         } else {
           // only changing index by one slide
           // BUT jumping between first/last item to facilitate infinite scroll
@@ -417,9 +426,14 @@ export default class Carousel extends React.Component {
       const currentSlide = slidePositions[slideIndex];
       const nextSlide = slideIndex + 1 in slidePositions && slidePositions[slideIndex + 1];
       const previousSlide = slideIndex - 1 in slidePositions && slidePositions[slideIndex - 1];
+      const finalSlide = slidePositions[slidePositions.length - 1];
       const currentEnd = this.availableSize - offset;
+      const totalSlidesSize = finalSlide.start + finalSlide.size;
 
-      if (this.availableSize < currentSlide.size * 3) {
+      if (this.availableSize > totalSlidesSize) {
+        // all slides are visible at all times
+        offset = 0;
+      } else if (this.availableSize < currentSlide.size * 3) {
         // the carousel is not big enough to show prev + next. Just adjust offset to show current slide
         offset = currentSlide.start;
       } else {
