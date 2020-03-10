@@ -40,6 +40,10 @@ module.exports = {
     entry: {
         testApp: [path.resolve(__dirname, "src/TestApp.jsx")],
     },
+    output: {
+        publicPath: "/dist",
+        path: path.resolve(__dirname, "./dist"),
+    },
     devServer: {
         compress: true,
         port: 10000
