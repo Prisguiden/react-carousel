@@ -1,5 +1,5 @@
 import React from "react"
-import Carousel from "../../dist/Carousel.js"
+import Carousel from "../../src/Carousel.jsx"
 
 export default class TestCarousel extends React.Component {
     constructor(props) {

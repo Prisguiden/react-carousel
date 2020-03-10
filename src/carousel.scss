@@ -1,4 +1,4 @@
-$base-size: 1.2rem !default;
+$base-size: 12px !default;
 $primary-color: rgba(106, 8, 185, 1) !default;
 
 .carousel-container {
@@ -144,7 +144,7 @@ $primary-color: rgba(106, 8, 185, 1) !default;
     margin-bottom: $base-size*1.5;
     &__dot {
         display: block;
-        margin: 0 0.6rem;
+        margin: 0 $base-size*0.5;
         height: $base-size;
         width: $base-size;
         border-radius: $base-size*0.5;
