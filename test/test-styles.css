@@ -1,42 +1,42 @@
 /* Basic styles for the test-pages of @Prisguiden/react-carousel */
 
 html {
-  font-size: 62.5%;
+    font-size: 62.5%;
 }
 
 body {
-  font-family: "Rubik", sans-serif;
-  background-color: #131e20;
-  color: #bbbbbb;
-  font-size: 16px;
-  font-size: 1.6rem;
-  line-height: normal;
-  font-family: Helvetica, Arial, sans-serif;
+    font-family: "Rubik", sans-serif;
+    background-color: #131e20;
+    color: #bbbbbb;
+    font-size: 16px;
+    font-size: 1.6rem;
+    line-height: normal;
+    font-family: Helvetica, Arial, sans-serif;
 }
 
 header {
-  display: block;
-  max-width: 1000px;
-  margin: 0 auto 30px;
+    display: block;
+    max-width: 1000px;
+    margin: 0 auto 30px;
 }
 
 article {
-  display: block;
-  max-width: 1000px;
-  margin: 0 auto;
+    display: block;
+    max-width: 1000px;
+    margin: 0 auto;
 }
 
 section {
-  margin-bottom: 30px;
+    margin-bottom: 30px;
 }
 
 section header {
-  background-color: black;
-  padding: 10px 15px;
+    background-color: black;
+    padding: 10px 15px;
 }
 
 a {
-  color: rgba(206, 160, 244, 1);
+    color: rgba(206, 160, 244, 1);
 }
 
 .carousel__slide--current {
@@ -49,40 +49,39 @@ a {
 }
 
 .test-carousel {
-  background-color: white;
-  border: thin solid rgba(206, 160, 244, 1);
-  border-radius: 0.6rem;
-  padding: 3rem;
+    background-color: white;
+    border: thin solid rgba(206, 160, 244, 1);
+    border-radius: 0.6rem;
+    padding: 3rem;
 }
 
 .test-carousel__actions {
-  border: thin solid red;
-  padding: 1.5rem;
-  border-radius: 0.3rem;
+    border: thin solid red;
+    padding: 1.5rem;
+    border-radius: 0.3rem;
 }
 
 .test-carousel__carousel {
-  border: thin solid blue;
-  margin: 1.5rem auto;
-  border-radius: 0.3rem;
-  height: 400px;
-  width: 100%;
+    border: thin solid blue;
+    margin: 1.5rem auto;
+    border-radius: 0.3rem;
+    height: 400px;
+    width: 100%;
 }
 
-
 .test-carousel__actions button {
-  font-size: 1.6rem;
-  margin: 0.5rem;
-  height: 3rem;
-  border-radius: 0.3rem;
+    font-size: 1.6rem;
+    margin: 0.5rem;
+    height: 3rem;
+    border-radius: 0.3rem;
 }
 
 .test-carousel__slide {
-  width: 100px;
-  height: 100px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: thin solid #dddddd;
-  color: #444;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: thin solid #dddddd;
+    color: #444;
 }
