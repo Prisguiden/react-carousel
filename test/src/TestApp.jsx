@@ -1,7 +1,7 @@
 import React, { Component } from "react"
 import ReactDOM from "react-dom"
 import TestCarousel from "./TestCarousel.jsx"
-
+import "../../src/carousel.scss"
 export default class TestApp extends Component {
     constructor(props) {
         super(props)
