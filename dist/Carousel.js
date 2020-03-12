@@ -430,7 +430,7 @@ export default class Carousel extends React.Component {
       const currentEnd = this.availableSize - offset;
       const totalSlidesSize = finalSlide.start + finalSlide.size;
 
-      if (this.availableSize > totalSlidesSize) {
+      if (this.availableSize >= totalSlidesSize) {
         // all slides are visible at all times
         offset = 0;
       } else if (this.availableSize < currentSlide.size * 3) {
