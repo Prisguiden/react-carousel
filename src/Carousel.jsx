@@ -28,8 +28,6 @@ export default class Carousel extends React.Component {
 
         this.initialized = false
         this.recalculate = false
-        this.carouselRef = null
-        this.resizeObserver = null
         this.slideRefs = [] // for keeping slides on init
         this.autoSlideSpeed = 300 // ms - this may change, depending on distance
         this.snapTimeout = null // make shure all parameters from snapping is set before running transitions
@@ -60,33 +58,17 @@ export default class Carousel extends React.Component {
     }
 
     // LIFESYCLE METHODS
+
     componentDidMount() {
         // start event listener for arrow keys on keyboard?
-        const { keyboard, slides, vertical } = this.props
+        const { keyboard } = this.props
         if (keyboard) {
             document.addEventListener("keydown", this.handleKeyboard)
         }
 
         this.computeSlides()
 
-        // Add resizeObserver and recalculate slide sizes if slides != auto
-        if (slides != "auto" && window.ResizeObserver) {
-            this.resizeObserver = new window.ResizeObserver(
-                (entries, observer) => {
-                    for (let entry of entries) {
-                        const size = vertical
-                            ? entry.contentRect.height
-                            : entry.contentRect.width
-                        if (size != this.availableSize) {
-                            console.log("recalculating", size)
-                            this.availableSize = size
-                            this.computeSlides()
-                        }
-                    }
-                }
-            )
-            this.resizeObserver.observe(this.carouselRef)
-        }
+        // TODO: Add resizeObserver and recalculate everything if bounds != this.availableSize
     }
 
     componentWillUnmount() {
@@ -97,9 +79,6 @@ export default class Carousel extends React.Component {
         const { keyboard } = this.props
         if (keyboard) {
             document.removeEventListener("keydown", this.handleKeyboard)
-        }
-        if (this.resizeObserver) {
-            this.resizeObserver.disconnect()
         }
     }
 
@@ -168,7 +147,6 @@ export default class Carousel extends React.Component {
             this.availableSize = vertical
                 ? containerSize.height
                 : containerSize.width
-            this.carouselRef = element
         }
     }
 
@@ -260,7 +238,7 @@ export default class Carousel extends React.Component {
 
             // set current index to first item of duplicates
             // that way we have items covering both directions of slider
-            newCurrentIndex += slidePositions.length
+            newCurrentIndex = slidePositions.length
             slidePositions = extendedSlidePositions
         } else {
             slidePositions.forEach((slide, index) => {
