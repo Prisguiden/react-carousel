@@ -75,7 +75,7 @@ export default class Carousel extends React.Component {
         this.computeSlides()
 
         // Add resizeObserver and recalculate slide sizes if slidesInView != auto
-        if (slidesInView != "auto" && window.ResizeObserver) {
+        if (window.ResizeObserver) {
             this.resizeObserver = new window.ResizeObserver(
                 (entries, observer) => {
                     for (let entry of entries) {
@@ -85,6 +85,11 @@ export default class Carousel extends React.Component {
                         if (size != this.availableSize) {
                             this.availableSize = size
                             this.computeSlides()
+                            this.setState({
+                                offset: this.calculateCarouselOffset(
+                                    this.state.currentIndex
+                                )
+                            })
                         }
                     }
                 }
@@ -473,7 +478,6 @@ export default class Carousel extends React.Component {
             const finalSlide = slidePositions[slidePositions.length - 1]
             const currentEnd = this.availableSize - offset
             const totalSlidesSize = finalSlide.start + finalSlide.size
-
             if (this.availableSize >= totalSlidesSize) {
                 // all slides are visible at all times
                 offset = 0
