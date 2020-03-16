@@ -17,6 +17,14 @@ const defaultState = {
     isDragging: false
 }
 
+const defaultSwipeConfig = {
+    delta: 30, // min distance(px) before a swipe starts
+    preventDefaultTouchmoveEvent: true, // preventDefault on touchmove,
+    trackTouch: true, // track touch input
+    trackMouse: true, // track mouse input
+    rotationAngle: 0 // set a rotation angle
+}
+
 export default class Carousel extends React.Component {
     constructor(props) {
         super(props)
@@ -26,6 +34,12 @@ export default class Carousel extends React.Component {
             ...defaultState
         }
 
+        this.swipeConfig = Object.assign(
+            {},
+            defaultSwipeConfig,
+            props.swipeConfig
+        )
+
         this.initialized = false
         this.recalculate = false
         this.carouselRef = null
@@ -34,14 +48,6 @@ export default class Carousel extends React.Component {
         this.autoSlideSpeed = 300 // ms - this may change, depending on distance
         this.snapTimeout = null // make shure all parameters from snapping is set before running transitions
         this.transitionTimeout = null // to disable transition-duration (css prop) after autoSlideSpeed
-
-        this.swipeConfig = {
-            delta: 30, // min distance(px) before a swipe starts
-            preventDefaultTouchmoveEvent: true, // preventDefault on touchmove,
-            trackTouch: true, // track touch input
-            trackMouse: true, // track mouse input
-            rotationAngle: 0 // set a rotation angle
-        }
 
         this.setCarouselRef = this.setCarouselRef.bind(this)
         this.setItemRef = this.setItemRef.bind(this)
@@ -62,15 +68,15 @@ export default class Carousel extends React.Component {
     // LIFESYCLE METHODS
     componentDidMount() {
         // start event listener for arrow keys on keyboard?
-        const { keyboard, slides, vertical } = this.props
+        const { keyboard, slidesInView, vertical } = this.props
         if (keyboard) {
             document.addEventListener("keydown", this.handleKeyboard)
         }
 
         this.computeSlides()
 
-        // Add resizeObserver and recalculate slide sizes if slides != auto
-        if (slides != "auto" && window.ResizeObserver) {
+        // Add resizeObserver and recalculate slide sizes if slidesInView != auto
+        if (slidesInView != "auto" && window.ResizeObserver) {
             this.resizeObserver = new window.ResizeObserver(
                 (entries, observer) => {
                     for (let entry of entries) {
@@ -172,9 +178,9 @@ export default class Carousel extends React.Component {
     }
 
     setItemRef(element, index) {
-        const { vertical, slides, children } = this.props
+        const { vertical, slidesInView, children } = this.props
         if ((!this.initialized || this.recalculate) && element) {
-            if (slides != "auto") {
+            if (slidesInView != "auto") {
                 // each slide size & start will be added in componentDidMount
                 this.slideRefs[index] = {
                     index: index
@@ -204,7 +210,7 @@ export default class Carousel extends React.Component {
 
     // INIT FUNCTION TO CALCULATE SLIDE SIZES AND SETTING UP ENV
     computeSlides() {
-        const { children, slides, infinite } = this.props
+        const { children, slidesInView, infinite } = this.props
         let { currentIndex, slidePositions } = this.state
         if (infinite && currentIndex > children.length - 1) {
             // This carousel is currently displaying a clone of the actual slide
@@ -214,7 +220,9 @@ export default class Carousel extends React.Component {
 
         // set stuffs added by ref callbacks to state
         const fixedSlideSize =
-            slides != "auto" ? Math.floor(this.availableSize / slides) : null
+            slidesInView != "auto"
+                ? Math.floor(this.availableSize / slidesInView)
+                : null
         let slidesTotalSize = fixedSlideSize
             ? fixedSlideSize * this.slideRefs.length
             : this.slideRefs.reduce((prev, curr) => {
@@ -651,7 +659,7 @@ export default class Carousel extends React.Component {
     render() {
         const {
             className,
-            slides,
+            slidesInView,
             controls,
             onSelect,
             swipeMode,
@@ -788,14 +796,15 @@ export default class Carousel extends React.Component {
 }
 
 Carousel.defaultProps = {
-    slides: "auto",
+    slidesInView: "auto",
     swipeMode: "step",
     snap: true,
     loop: true,
     infinite: false,
     vertical: false,
     keyboard: false,
-    controls: false
+    controls: false,
+    swipeConfig: {}
 }
 
 Carousel.propTypes = {
@@ -807,9 +816,12 @@ Carousel.propTypes = {
     snap: PropTypes.bool,
     infinite: PropTypes.bool,
     loop: PropTypes.bool.isRequired,
-    slides: PropTypes.oneOfType([PropTypes.number, PropTypes.oneOf(["auto"])])
-        .isRequired,
+    slidesInView: PropTypes.oneOfType([
+        PropTypes.number,
+        PropTypes.oneOf(["auto"])
+    ]).isRequired,
     swipeMode: PropTypes.oneOf(["drag", "step", "none"]).isRequired,
     keyboard: PropTypes.bool.isRequired,
-    controls: PropTypes.bool.isRequired
+    controls: PropTypes.bool.isRequired,
+    swipeConfig: PropTypes.object.isRequired
 }

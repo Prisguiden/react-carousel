@@ -132,7 +132,7 @@ export default class TestCarousel extends React.Component {
                         <>
                             <div className="main">
                                 <Carousel
-                                    slides={3}
+                                    slidesInView={3}
                                     controls={controls}
                                     loop={false}
                                     infinite={true}
@@ -141,6 +141,7 @@ export default class TestCarousel extends React.Component {
                                     currentIndex={currentSlide}
                                     onChangeIndex={this.updateCurrentSlide}
                                     swipeMode="step"
+                                    swipeConfig={{ delta: 10 }}
                                 >
                                     {items.map((slide, index) => {
                                         return (
@@ -156,7 +157,7 @@ export default class TestCarousel extends React.Component {
                             </div>
                             <div className="thumbs">
                                 <Carousel
-                                    slides={slides}
+                                    slidesInView={slides}
                                     controls={controls}
                                     loop={true}
                                     infinite={false}
