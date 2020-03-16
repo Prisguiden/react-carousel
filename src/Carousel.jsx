@@ -218,10 +218,33 @@ export default class Carousel extends React.Component {
         }
 
         // set stuffs added by ref callbacks to state
-        const fixedSlideSize =
-            slidesInView != "auto"
-                ? Math.floor(this.availableSize / slidesInView)
-                : null
+        let fixedSlideSize = null
+        if (typeof slidesInView === "object" && slidesInView != null) {
+            // carousel is operating with dynamic boundaries.
+
+            let bestBoundsMatch = null
+            let slidesForCurrentView = 1 // fallback to one slide
+            for (const bounds in slidesInView) {
+                if (bounds < this.availableSize) {
+                    // current caousel size is big enough to use these bounds
+                    if (!bestBoundsMatch) {
+                        // first bounds below current carousel size
+                        bestBoundsMatch = bounds
+                        slidesForCurrentView = slidesInView[bounds]
+                    } else if (bounds > bestBoundsMatch) {
+                        // current bounds are bigger than found before
+                        bestBoundsMatch = bounds
+                        slidesForCurrentView = slidesInView[bounds]
+                    }
+                }
+            }
+            fixedSlideSize = Math.floor(
+                this.availableSize / slidesForCurrentView
+            )
+        } else if (slidesInView != "auto") {
+            // carousel has a staic number of slides at all times
+            fixedSlideSize = Math.floor(this.availableSize / slidesInView)
+        }
 
         if (fixedSlideSize) {
             // need to set each slides size + start
@@ -807,6 +830,7 @@ Carousel.propTypes = {
     infinite: PropTypes.bool,
     loop: PropTypes.bool.isRequired,
     slidesInView: PropTypes.oneOfType([
+        PropTypes.object,
         PropTypes.number,
         PropTypes.oneOf(["auto"])
     ]).isRequired,

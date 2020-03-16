@@ -132,7 +132,12 @@ export default class TestCarousel extends React.Component {
                         <>
                             <div className="main">
                                 <Carousel
-                                    slidesInView={3}
+                                    slidesInView={{
+                                        1024: 5,
+                                        800: 4,
+                                        600: 3,
+                                        400: 2
+                                    }}
                                     controls={controls}
                                     loop={false}
                                     infinite={true}
