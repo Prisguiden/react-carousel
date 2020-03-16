@@ -10,7 +10,6 @@ const defaultState = {
     fixedSlideSize: false,
     slidePositions: [],
     availableSize: null,
-    slidesTotalSize: null,
     autoSliding: false,
     clones: null,
     isLooping: false,
@@ -181,7 +180,7 @@ export default class Carousel extends React.Component {
         const { vertical, slidesInView, children } = this.props
         if ((!this.initialized || this.recalculate) && element) {
             if (slidesInView != "auto") {
-                // each slide size & start will be added in componentDidMount
+                // each slide size & start will be added when this.computeSlides() runs
                 this.slideRefs[index] = {
                     index: index
                 }
@@ -223,12 +222,6 @@ export default class Carousel extends React.Component {
             slidesInView != "auto"
                 ? Math.floor(this.availableSize / slidesInView)
                 : null
-        let slidesTotalSize = fixedSlideSize
-            ? fixedSlideSize * this.slideRefs.length
-            : this.slideRefs.reduce((prev, curr) => {
-                  const acc = isNaN(prev) ? parseInt(prev.size) : prev
-                  return acc + parseInt(curr.size)
-              })
 
         if (fixedSlideSize) {
             // need to set each slides size + start
@@ -247,8 +240,6 @@ export default class Carousel extends React.Component {
         const clones = []
         let newCurrentIndex = currentIndex
         if (infinite) {
-            slidesTotalSize = slidesTotalSize * 3
-
             const extendedSlidePositions = []
             let nextStart = 0
             let nextIdx = 0
@@ -280,7 +271,6 @@ export default class Carousel extends React.Component {
                 clones: clones,
                 currentIndex: newCurrentIndex,
                 fixedSlideSize: fixedSlideSize,
-                slidesTotalSize: slidesTotalSize,
                 slidePositions: slidePositions
             },
             () => {
