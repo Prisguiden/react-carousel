@@ -11,11 +11,22 @@ const defaultState = {
   fixedSlideSize: false,
   slidePositions: [],
   availableSize: null,
-  slidesTotalSize: null,
   autoSliding: false,
   clones: null,
   isLooping: false,
   isDragging: false
+};
+const defaultSwipeConfig = {
+  delta: 30,
+  // min distance(px) before a swipe starts
+  preventDefaultTouchmoveEvent: true,
+  // preventDefault on touchmove,
+  trackTouch: true,
+  // track touch input
+  trackMouse: true,
+  // track mouse input
+  rotationAngle: 0 // set a rotation angle
+
 };
 export default class Carousel extends React.Component {
   constructor(props) {
@@ -24,8 +35,11 @@ export default class Carousel extends React.Component {
       currentIndex: this.props.currentIndex || 0,
       ...defaultState
     };
+    this.swipeConfig = Object.assign({}, defaultSwipeConfig, props.swipeConfig);
     this.initialized = false;
     this.recalculate = false;
+    this.carouselRef = null;
+    this.resizeObserver = null;
     this.slideRefs = []; // for keeping slides on init
 
     this.autoSlideSpeed = 300; // ms - this may change, depending on distance
@@ -34,18 +48,6 @@ export default class Carousel extends React.Component {
 
     this.transitionTimeout = null; // to disable transition-duration (css prop) after autoSlideSpeed
 
-    this.swipeConfig = {
-      delta: 30,
-      // min distance(px) before a swipe starts
-      preventDefaultTouchmoveEvent: true,
-      // preventDefault on touchmove,
-      trackTouch: true,
-      // track touch input
-      trackMouse: true,
-      // track mouse input
-      rotationAngle: 0 // set a rotation angle
-
-    };
     this.setCarouselRef = this.setCarouselRef.bind(this);
     this.setItemRef = this.setItemRef.bind(this);
     this.getTransform = this.getTransform.bind(this);
@@ -65,14 +67,33 @@ export default class Carousel extends React.Component {
   componentDidMount() {
     // start event listener for arrow keys on keyboard?
     const {
-      keyboard
+      keyboard,
+      slidesInView,
+      vertical
     } = this.props;
 
     if (keyboard) {
       document.addEventListener("keydown", this.handleKeyboard);
     }
 
-    this.computeSlides(); // TODO: Add resizeObserver and recalculate everything if bounds != this.availableSize
+    this.computeSlides(); // Add resizeObserver and recalculate slide sizes if slidesInView != auto
+
+    if (window.ResizeObserver) {
+      this.resizeObserver = new window.ResizeObserver((entries, observer) => {
+        for (let entry of entries) {
+          const size = vertical ? entry.contentRect.height : entry.contentRect.width;
+
+          if (size != this.availableSize) {
+            this.availableSize = size;
+            this.computeSlides();
+            this.setState({
+              offset: this.calculateCarouselOffset(this.state.currentIndex)
+            });
+          }
+        }
+      });
+      this.resizeObserver.observe(this.carouselRef);
+    }
   }
 
   componentWillUnmount() {
@@ -85,6 +106,10 @@ export default class Carousel extends React.Component {
 
     if (keyboard) {
       document.removeEventListener("keydown", this.handleKeyboard);
+    }
+
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
     }
   }
 
@@ -147,19 +172,20 @@ export default class Carousel extends React.Component {
       } = this.props;
       const containerSize = element.getBoundingClientRect();
       this.availableSize = vertical ? containerSize.height : containerSize.width;
+      this.carouselRef = element;
     }
   }
 
   setItemRef(element, index) {
     const {
       vertical,
-      slides,
+      slidesInView,
       children
     } = this.props;
 
     if ((!this.initialized || this.recalculate) && element) {
-      if (slides != "auto") {
-        // each slide size & start will be added in componentDidMount
+      if (slidesInView != "auto") {
+        // each slide size & start will be added when this.computeSlides() runs
         this.slideRefs[index] = {
           index: index
         };
@@ -188,7 +214,7 @@ export default class Carousel extends React.Component {
   computeSlides() {
     const {
       children,
-      slides,
+      slidesInView,
       infinite
     } = this.props;
     let {
@@ -203,11 +229,33 @@ export default class Carousel extends React.Component {
     } // set stuffs added by ref callbacks to state
 
 
-    const fixedSlideSize = slides != "auto" ? Math.floor(this.availableSize / slides) : null;
-    let slidesTotalSize = fixedSlideSize ? fixedSlideSize * this.slideRefs.length : this.slideRefs.reduce((prev, curr) => {
-      const acc = isNaN(prev) ? parseInt(prev.size) : prev;
-      return acc + parseInt(curr.size);
-    });
+    let fixedSlideSize = null;
+
+    if (typeof slidesInView === "object" && slidesInView != null) {
+      // carousel is operating with dynamic boundaries.
+      let bestBoundsMatch = null;
+      let slidesForCurrentView = 1; // fallback to one slide
+
+      for (const bounds in slidesInView) {
+        if (bounds < this.availableSize) {
+          // current caousel size is big enough to use these bounds
+          if (!bestBoundsMatch) {
+            // first bounds below current carousel size
+            bestBoundsMatch = bounds;
+            slidesForCurrentView = slidesInView[bounds];
+          } else if (bounds > bestBoundsMatch) {
+            // current bounds are bigger than found before
+            bestBoundsMatch = bounds;
+            slidesForCurrentView = slidesInView[bounds];
+          }
+        }
+      }
+
+      fixedSlideSize = Math.floor(this.availableSize / slidesForCurrentView);
+    } else if (slidesInView != "auto") {
+      // carousel has a staic number of slides at all times
+      fixedSlideSize = Math.floor(this.availableSize / slidesInView);
+    }
 
     if (fixedSlideSize) {
       // need to set each slides size + start
@@ -226,7 +274,6 @@ export default class Carousel extends React.Component {
     let newCurrentIndex = currentIndex;
 
     if (infinite) {
-      slidesTotalSize = slidesTotalSize * 3;
       const extendedSlidePositions = [];
       let nextStart = 0;
       let nextIdx = 0;
@@ -245,7 +292,7 @@ export default class Carousel extends React.Component {
       // that way we have items covering both directions of slider
 
 
-      newCurrentIndex = slidePositions.length;
+      newCurrentIndex += slidePositions.length;
       slidePositions = extendedSlidePositions;
     } else {
       slidePositions.forEach((slide, index) => {
@@ -257,7 +304,6 @@ export default class Carousel extends React.Component {
       clones: clones,
       currentIndex: newCurrentIndex,
       fixedSlideSize: fixedSlideSize,
-      slidesTotalSize: slidesTotalSize,
       slidePositions: slidePositions
     }, () => {
       this.initialized = true;
@@ -651,7 +697,7 @@ export default class Carousel extends React.Component {
   render() {
     const {
       className,
-      slides,
+      slidesInView,
       controls,
       onSelect,
       swipeMode,
@@ -708,14 +754,15 @@ export default class Carousel extends React.Component {
 
 }
 Carousel.defaultProps = {
-  slides: "auto",
+  slidesInView: "auto",
   swipeMode: "step",
   snap: true,
   loop: true,
   infinite: false,
   vertical: false,
   keyboard: false,
-  controls: false
+  controls: false,
+  swipeConfig: {}
 };
 Carousel.propTypes = {
   className: PropTypes.string,
@@ -726,8 +773,9 @@ Carousel.propTypes = {
   snap: PropTypes.bool,
   infinite: PropTypes.bool,
   loop: PropTypes.bool.isRequired,
-  slides: PropTypes.oneOfType([PropTypes.number, PropTypes.oneOf(["auto"])]).isRequired,
+  slidesInView: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.oneOf(["auto"])]).isRequired,
   swipeMode: PropTypes.oneOf(["drag", "step", "none"]).isRequired,
   keyboard: PropTypes.bool.isRequired,
-  controls: PropTypes.bool.isRequired
+  controls: PropTypes.bool.isRequired,
+  swipeConfig: PropTypes.object.isRequired
 };
