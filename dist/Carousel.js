@@ -365,7 +365,7 @@ export default class Carousel extends React.Component {
         if (infiniteSingleStep == 0) {
           // jumping more than one slide
           // OR jumping between first-last in loop mode
-          const totalSlidesSize = slidePositions[slidesCount - 1].start + slidePositions[slidesCount - 1].size;
+          const totalSlidesSize = slidePositions[slidePositions.length - 1].start + slidePositions[slidePositions.length - 1].size;
 
           if (!infinite && swipeMode == "step" && this.availableSize > totalSlidesSize) {
             // prevent playing loop animation; all slides are visible at all times
