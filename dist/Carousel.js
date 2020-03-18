@@ -173,6 +173,11 @@ export default class Carousel extends React.Component {
       const containerSize = element.getBoundingClientRect();
       this.availableSize = vertical ? containerSize.height : containerSize.width;
       this.carouselRef = element;
+      element.addEventListener("dragstart", e => {
+        if (e.target.nodeName === "A") {
+          e.preventDefault();
+        }
+      });
     }
   }
 
@@ -571,10 +576,9 @@ export default class Carousel extends React.Component {
       if (onSelect) {
         // this carousel has i custom onSelect function
         onSelect(index, event);
-      } else if (event.target.firstChild.href) {
-        // the slide is a link - navigate to href
-        window.location.href = event.target.firstChild.href;
       }
+    } else {
+      event.preventDefault();
     }
   }
 

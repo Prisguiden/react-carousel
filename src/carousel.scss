@@ -68,7 +68,7 @@ $primary-color: rgba(106, 8, 185, 1) !default;
             max-height: 100%;
             touch-action: none;
         }
-        a, img {
+        img {
             /* this is unfortunately the only way i've managed to disable native/OS drag events */
             /* use <Carousel onSelect={myOnSelectFunc(index, event)}> if navigation or other actions are needed for the slide */
             pointer-events: none;
