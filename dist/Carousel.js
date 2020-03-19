@@ -599,7 +599,9 @@ export default class Carousel extends React.Component {
     // TODO: Add support for inertia (continued scroll after release) by reading eventData.velocity
     const {
       infinite,
-      snap
+      snap,
+      lazySwipe,
+      vertical
     } = this.props;
     const {
       swiping,
@@ -607,9 +609,25 @@ export default class Carousel extends React.Component {
       slidePositions
     } = this.state;
     const pos = slidePositions[currentIndex].start + swiping;
-    const closestItem = slidePositions.reduce((prev, curr) => {
+    let closestItem = slidePositions.reduce((prev, curr) => {
       return Math.abs(curr.start - pos) < Math.abs(prev.start - pos) ? curr : prev;
     });
+
+    if (snap && lazySwipe && closestItem.index == currentIndex) {
+      // allow lazy users to trigger prev/next even if they swiped just a minimum distance
+      let modifier = 0;
+
+      if (vertical) {
+        if (eventData.dir == "Down") modifier = 1;
+        if (eventData.dir == "Up") modifier = -1;
+      } else {
+        if (eventData.dir == "Left") modifier = 1;
+        if (eventData.dir == "Right") modifier = -1;
+      }
+
+      closestItem = slidePositions[currentIndex + modifier] ? slidePositions[currentIndex + modifier] : slidePositions[currentIndex];
+    }
+
     let index = closestItem.index;
     const diff = -(closestItem.start - pos);
 
@@ -760,6 +778,7 @@ export default class Carousel extends React.Component {
 Carousel.defaultProps = {
   slidesInView: "auto",
   swipeMode: "step",
+  lazySwipe: true,
   snap: true,
   loop: true,
   infinite: false,
@@ -774,6 +793,7 @@ Carousel.propTypes = {
   onChangeIndex: PropTypes.func,
   onSelect: PropTypes.func,
   vertical: PropTypes.bool.isRequired,
+  lazySwipe: PropTypes.bool.isRequired,
   snap: PropTypes.bool,
   infinite: PropTypes.bool,
   loop: PropTypes.bool.isRequired,
