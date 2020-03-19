@@ -50,6 +50,7 @@ $primary-color: rgba(106, 8, 185, 1) !default;
     &--vertical {
         @extend .carousel;
         flex-direction: column;
+        touch-action: none; /* disable scrolling up/down on page */
     }
 
     &__slide {
@@ -66,11 +67,8 @@ $primary-color: rgba(106, 8, 185, 1) !default;
         >* {
             max-width: 100%;
             max-height: 100%;
-            touch-action: none;
         }
         img {
-            /* this is unfortunately the only way i've managed to disable native/OS drag events */
-            /* use <Carousel onSelect={myOnSelectFunc(index, event)}> if navigation or other actions are needed for the slide */
             pointer-events: none;
         }
     }
