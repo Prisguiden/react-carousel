@@ -145,7 +145,7 @@ export default class TestCarousel extends React.Component {
                                     vertical={vertical}
                                     currentIndex={currentSlide}
                                     onChangeIndex={this.updateCurrentSlide}
-                                    swipeMode="step"
+                                    swipeMode="drag"
                                     swipeConfig={{ delta: 10 }}
                                 >
                                     {items.map((slide, index) => {
