@@ -7,11 +7,10 @@ const defaultState = {
     swiping: 0,
     offset: 0,
     currentIndex: 0,
-    fixedSlideSize: false,
-    slidePositions: [],
     availableSize: null,
     autoSliding: false,
     clones: null,
+    clonePositions: [],
     isLooping: false,
     isDragging: false
 }
@@ -39,8 +38,6 @@ export default class Carousel extends React.Component {
             props.swipeConfig
         )
 
-        this.initialized = false
-        this.recalculate = false
         this.carouselRef = null
         this.resizeObserver = null
         this.slideRefs = [] // for keeping slides on init
@@ -49,7 +46,7 @@ export default class Carousel extends React.Component {
         this.transitionTimeout = null // to disable transition-duration (css prop) after autoSlideSpeed
 
         this.setCarouselRef = this.setCarouselRef.bind(this)
-        this.setItemRef = this.setItemRef.bind(this)
+        this.setSlideRef = this.setSlideRef.bind(this)
         this.getTransform = this.getTransform.bind(this)
         this.calculateCarouselOffset = this.calculateCarouselOffset.bind(this)
 
@@ -67,12 +64,18 @@ export default class Carousel extends React.Component {
     // LIFESYCLE METHODS
     componentDidMount() {
         // start event listener for arrow keys on keyboard?
-        const { keyboard, slidesInView, vertical } = this.props
+        const {
+            keyboard,
+            slidesInView,
+            vertical,
+            infinite,
+            swipeMode
+        } = this.props
         if (keyboard) {
             document.addEventListener("keydown", this.handleKeyboard)
         }
 
-        this.computeSlides()
+        //this.computeSlides()
 
         // Add resizeObserver and recalculate slide sizes if slidesInView != auto
         if (window.ResizeObserver) {
@@ -84,12 +87,14 @@ export default class Carousel extends React.Component {
                             : entry.contentRect.width
                         if (size != this.availableSize) {
                             this.availableSize = size
-                            this.computeSlides()
-                            this.setState({
-                                offset: this.calculateCarouselOffset(
-                                    this.state.currentIndex
-                                )
-                            })
+                            this.computeClonePositions()
+                            if (!infinite && swipeMode == "step") {
+                                this.setState({
+                                    offset: this.calculateCarouselOffset(
+                                        this.state.currentIndex
+                                    )
+                                })
+                            }
                         }
                     }
                 }
@@ -113,22 +118,21 @@ export default class Carousel extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        const { onChangeIndex } = this.props
-        const { children } = this.props
+        const { onChangeIndex, children } = this.props
+        const { clones } = this.state
         var oldKeys = JSON.stringify(prevProps.children.map(child => child.key))
         var newKeys = JSON.stringify(children.map(child => child.key))
 
         if (
-            !this.recalculate &&
-            this.initialized &&
+            clones &&
             prevProps.children.length &&
             (prevProps.children.length != children.length ||
                 oldKeys !== newKeys)
         ) {
             // A slide has been added,removed or moved
-            // re-initialize everyting
-            // recalculate will trigger recreation of clones & slidePositions when last slide runs its reference callback
-            this.recalculate = true
+
+            // HARD REBOOT EVERYTING
+            // note: removing clones will trigger re-creation & -calculation
             this.slideRefs = []
             this.setState({ ...defaultState })
         }
@@ -168,8 +172,6 @@ export default class Carousel extends React.Component {
     }
 
     // REACT REFERENCE CALLBACKS
-    // note: setItemRef is only in use when !this.initialized - else we're using clones without ref
-
     setCarouselRef(element) {
         if (element) {
             const { vertical, children } = this.props
@@ -187,46 +189,65 @@ export default class Carousel extends React.Component {
         }
     }
 
-    setItemRef(element, index) {
-        const { vertical, slidesInView, children } = this.props
-        if ((!this.initialized || this.recalculate) && element) {
-            if (slidesInView != "auto") {
-                // each slide size & start will be added when this.computeSlides() runs
-                this.slideRefs[index] = {
-                    index: index
-                }
-            } else {
-                // calculate each slide size based on its css width/heigth
-                const slideSizes = element.getBoundingClientRect()
-                const size = vertical ? slideSizes.height : slideSizes.width
-                const previousItem = this.slideRefs[index - 1] || null
-                const start = previousItem
-                    ? previousItem.start + previousItem.size
-                    : 0
-                this.slideRefs[index] = {
-                    index: index,
-                    start: start,
-                    size: size
-                }
+    setSlideRef(element, index) {
+        const { children } = this.props
+        const { clones, clonePositions } = this.state
+        // set the ref
+        if (element) {
+            this.slideRefs[index] = {
+                index: index,
+                element: element
             }
 
-            if (this.recalculate && index == children.length - 1) {
-                // need to manually call computeSlides AFTER all the refs have been set
-                this.computeSlides()
-                this.recalculate = false
+            // set up stuff when the final ref is set
+            if (!clones && index == children.length - 1) {
+                // generate clones - this is done only once per init/reset
+                // this will trigger a new render and a new setSlideRef cycle
+                this.createClones()
+            }
+
+            if (
+                clones &&
+                !clonePositions.length &&
+                index == clones.length - 1
+            ) {
+                // compute each slide-clone start & size
+                this.computeClonePositions()
             }
         }
     }
 
-    // INIT FUNCTION TO CALCULATE SLIDE SIZES AND SETTING UP ENV
-    computeSlides() {
-        const { children, slidesInView, infinite } = this.props
-        let { currentIndex, slidePositions } = this.state
-        if (infinite && currentIndex > children.length - 1) {
-            // This carousel is currently displaying a clone of the actual slide
-            // Need to find the correct index amongst the original children
-            currentIndex = currentIndex - slidePositions.length / 3
+    createClones() {
+        const { infinite, children } = this.props
+        const { currentIndex } = this.state
+
+        const clones = []
+        let newCurrentIndex = currentIndex
+        if (infinite) {
+            // loop over slideRefs 3 times
+            // this way we have extra clones covering both directions of slider
+            let nextIdx = 0
+            for (let i = 1; i <= 3; i++) {
+                children.forEach((slide, index) => {
+                    clones[nextIdx] = React.cloneElement(slide)
+                    nextIdx += 1
+                })
+            }
+
+            // set current index to first item of duplicates
+            newCurrentIndex += this.slideRefs.length
+        } else {
+            children.forEach((slide, index) => {
+                clones[index] = React.cloneElement(slide)
+            })
         }
+        this.setState({ clones: clones, currentIndex: newCurrentIndex })
+    }
+
+    // INIT FUNCTION TO CALCULATE SLIDE SIZES AND SETTING UP ENV
+    computeClonePositions() {
+        const { slidesInView, infinite, vertical } = this.props
+        const { clones } = this.state
 
         // set stuffs added by ref callbacks to state
         let fixedSlideSize = null
@@ -257,60 +278,35 @@ export default class Carousel extends React.Component {
             fixedSlideSize = Math.floor(this.availableSize / slidesInView)
         }
 
+        // need to set each slides size + start
+        // this could not calculate on setSlideRef because we need this.availableWidth
+        let clonePositions = []
         if (fixedSlideSize) {
-            // need to set each slides size + start
-            // this could not calculate on setItemRef
-            slidePositions = this.slideRefs.map((item, index) => {
+            // all slides have the same size
+            clonePositions = clones.map((clone, index) => {
                 return {
-                    ...item,
+                    index: index,
                     size: fixedSlideSize,
                     start: fixedSlideSize * index
                 }
             })
         } else {
-            slidePositions = this.slideRefs
-        }
-
-        const clones = []
-        let newCurrentIndex = currentIndex
-        if (infinite) {
-            const extendedSlidePositions = []
-            let nextStart = 0
-            let nextIdx = 0
-            for (let i = 1; i <= 3; i++) {
-                slidePositions.forEach((slide, index) => {
-                    extendedSlidePositions[nextIdx] = {
-                        ...slide,
-                        index: nextIdx,
-                        start: nextStart
-                    }
-                    clones[nextIdx] = React.cloneElement(children[index])
-                    nextIdx += 1
-                    nextStart = nextStart + slide.size
-                })
-            }
-
-            // set current index to first item of duplicates
-            // that way we have items covering both directions of slider
-            newCurrentIndex += slidePositions.length
-            slidePositions = extendedSlidePositions
-        } else {
-            slidePositions.forEach((slide, index) => {
-                clones[index] = React.cloneElement(children[index])
+            // calculate each slide size based on its css width/heigth
+            let prev = null
+            clonePositions = clones.map((clone, index) => {
+                const element = this.slideRefs[index % this.slideRefs.length]
+                    .element
+                const slideSizes = element.getBoundingClientRect()
+                const result = {
+                    index: index,
+                    size: vertical ? slideSizes.height : slideSizes.width,
+                    start: prev ? prev.start + prev.size : 0
+                }
+                prev = result
+                return result
             })
         }
-
-        this.setState(
-            {
-                clones: clones,
-                currentIndex: newCurrentIndex,
-                fixedSlideSize: fixedSlideSize,
-                slidePositions: slidePositions
-            },
-            () => {
-                this.initialized = true
-            }
-        )
+        this.setState({ clonePositions: clonePositions })
     }
 
     changeCurrentIndex(index) {
@@ -321,7 +317,7 @@ export default class Carousel extends React.Component {
         // See TODO note further down
 
         const { infinite, loop, children, swipeMode } = this.props
-        const { currentIndex, slidePositions } = this.state
+        const { currentIndex, clonePositions } = this.state
         const slidesCount = children.length
 
         let idx = index
@@ -375,8 +371,8 @@ export default class Carousel extends React.Component {
                     // jumping more than one slide
                     // OR jumping between first-last in loop mode
                     const totalSlidesSize =
-                        slidePositions[slidePositions.length - 1].start +
-                        slidePositions[slidePositions.length - 1].size
+                        clonePositions[clonePositions.length - 1].start +
+                        clonePositions[clonePositions.length - 1].size
                     if (
                         !infinite &&
                         swipeMode == "step" &&
@@ -386,8 +382,8 @@ export default class Carousel extends React.Component {
                         this.autoSlide({ currentIndex: idx })
                     } else {
                         const autoswipe =
-                            slidePositions[currentIndex].start -
-                            slidePositions[idx].start
+                            clonePositions[currentIndex].start -
+                            clonePositions[idx].start
                         //const speed = Math.round(Math.abs(autoswipe) * 0.25)
                         const speed = 0
                         this.setState(
@@ -412,7 +408,7 @@ export default class Carousel extends React.Component {
                     // BUT jumping between first/last item to facilitate infinite scroll
                     // postitive infiniteSingleStep value means going forwards
                     const autoSwipingItemId = idx < currentIndex ? idx - 1 : idx
-                    const dist = slidePositions[autoSwipingItemId].size
+                    const dist = clonePositions[autoSwipingItemId].size
                     const autoswipe = infiniteSingleStep == 1 ? dist : -dist
                     this.setState(
                         {
@@ -466,7 +462,7 @@ export default class Carousel extends React.Component {
     }
 
     calculateCarouselOffset(slideIndex) {
-        const { slidePositions } = this.state
+        const { clonePositions } = this.state
         const currentOffset = this.state.offset
         let offset = currentOffset
 
@@ -474,14 +470,14 @@ export default class Carousel extends React.Component {
         if (typeof slideIndex != "undefined") {
             // perform translate if there is no further items
             // translate by size of the item to dissapear from view
-            const currentSlide = slidePositions[slideIndex]
+            const currentSlide = clonePositions[slideIndex]
             const nextSlide =
-                slideIndex + 1 in slidePositions &&
-                slidePositions[slideIndex + 1]
+                slideIndex + 1 in clonePositions &&
+                clonePositions[slideIndex + 1]
             const previousSlide =
-                slideIndex - 1 in slidePositions &&
-                slidePositions[slideIndex - 1]
-            const finalSlide = slidePositions[slidePositions.length - 1]
+                slideIndex - 1 in clonePositions &&
+                clonePositions[slideIndex - 1]
+            const finalSlide = clonePositions[clonePositions.length - 1]
             const currentEnd = this.availableSize - offset
             const totalSlidesSize = finalSlide.start + finalSlide.size
             if (this.availableSize >= totalSlidesSize) {
@@ -528,7 +524,7 @@ export default class Carousel extends React.Component {
 
     prev() {
         const { children, loop } = this.props
-        const { currentIndex, slidePositions } = this.state
+        const { currentIndex } = this.state
         if (currentIndex > 0) {
             this.changeCurrentIndex(currentIndex - 1)
         } else {
@@ -538,8 +534,8 @@ export default class Carousel extends React.Component {
 
     next() {
         const { children, loop } = this.props
-        const { currentIndex, slidePositions } = this.state
-        if (currentIndex < slidePositions.length - 1) {
+        const { currentIndex, clonePositions } = this.state
+        if (currentIndex < clonePositions.length - 1) {
             this.changeCurrentIndex(currentIndex + 1)
         } else {
             if (loop) this.changeCurrentIndex(0)
@@ -589,9 +585,9 @@ export default class Carousel extends React.Component {
         // TODO: Add support for inertia (continued scroll after release) by reading eventData.velocity
 
         const { infinite, snap, lazySwipe, vertical } = this.props
-        const { swiping, currentIndex, slidePositions } = this.state
-        const pos = slidePositions[currentIndex].start + swiping
-        let closestItem = slidePositions.reduce((prev, curr) => {
+        const { swiping, currentIndex, clonePositions } = this.state
+        const pos = clonePositions[currentIndex].start + swiping
+        let closestItem = clonePositions.reduce((prev, curr) => {
             return Math.abs(curr.start - pos) < Math.abs(prev.start - pos)
                 ? curr
                 : prev
@@ -608,16 +604,16 @@ export default class Carousel extends React.Component {
                 if (eventData.dir == "Right") modifier = -1
             }
 
-            closestItem = slidePositions[currentIndex + modifier]
-                ? slidePositions[currentIndex + modifier]
-                : slidePositions[currentIndex]
+            closestItem = clonePositions[currentIndex + modifier]
+                ? clonePositions[currentIndex + modifier]
+                : clonePositions[currentIndex]
         }
         let index = closestItem.index
         const diff = -(closestItem.start - pos)
 
         if (infinite) {
-            // adjust currentIndex to same slide in the mid-segment of clones
-            const slidesCount = slidePositions.length / 3
+            // adjust currentIndex to same slide in the mid-segment of clonePositions
+            const slidesCount = clonePositions.length / 3
             const minIndex = slidesCount - 1
             const maxIndex = slidesCount * 2 - 1
             if (index <= minIndex) {
@@ -643,53 +639,51 @@ export default class Carousel extends React.Component {
         const {
             currentIndex,
             offset,
-            fixedSlideSize,
             swiping,
-            slidePositions,
             autoSliding,
             isLooping,
-            isDragging
+            isDragging,
+            clonePositions
         } = this.state
 
         const style = {}
-        if (isDragging) {
-            style.transition = "none"
-        } else if (autoSliding || isLooping) {
-            style.transition = `transform ${this.autoSlideSpeed}ms, filter 150ms ease-out, -webkit-filter 150ms ease-out, opacity 150ms ease-out`
-        }
 
-        if (isLooping) {
-            style.filter = "blur(1px)"
-            style.WebkitFilter = "blur(1px)"
-            style.opacity = 0
-        } else {
-            style.filter = "none"
-            style.WebkitFilter = "none"
-            style.opacity = 1
-        }
-
-        let pos = 0
-        if (!infinite && swipeMode == "step") {
-            // in this mode we dont change translate before next slide after/before currentIndex is the last fully visible one
-            // this translate-value is set to state on this.autoSlide (setCurrentIndex allways calls that method) so we don't need to calcualte it here
-            pos = offset + swiping
-        } else {
-            // translate so that currentIndex is allways the first visible slide
-            if (fixedSlideSize) {
-                pos = fixedSlideSize * currentIndex
-            } else {
-                pos =
-                    (slidePositions[currentIndex] &&
-                        slidePositions[currentIndex].start) ||
-                    0
+        if (clonePositions.length) {
+            if (isDragging) {
+                style.transition = "none"
+            } else if (autoSliding || isLooping) {
+                style.transition = `transform ${this.autoSlideSpeed}ms, filter 150ms ease-out, -webkit-filter 150ms ease-out, opacity 150ms ease-out`
             }
-            pos += swiping
+
+            if (isLooping) {
+                style.filter = "blur(1px)"
+                style.WebkitFilter = "blur(1px)"
+                style.opacity = 0
+            } else {
+                style.filter = "none"
+                style.WebkitFilter = "none"
+                style.opacity = 1
+            }
+
+            let pos = 0
+            if (!infinite && swipeMode == "step") {
+                // in this mode we dont change translate before next slide after/before currentIndex is the last fully visible one
+                // this translate-value is set to state on this.autoSlide (setCurrentIndex allways calls that method) so we don't need to calcualte it here
+                pos = offset + swiping
+            } else {
+                // translate so that currentIndex is allways the first visible slide
+                pos =
+                    (clonePositions[currentIndex] &&
+                        clonePositions[currentIndex].start) ||
+                    0
+                pos += swiping
+            }
+
+            const x = (!vertical && -pos) || 0
+            const y = (vertical && -pos) || 0
+
+            style.transform = `translate3d(${x}px, ${y}px, 0px)`
         }
-
-        const x = (!vertical && -pos) || 0
-        const y = (vertical && -pos) || 0
-
-        style.transform = `translate3d(${x}px, ${y}px, 0px)`
         return style
     }
 
@@ -705,12 +699,20 @@ export default class Carousel extends React.Component {
         } = this.props
         const {
             currentIndex,
-            fixedSlideSize,
             swiping,
             clones,
+            clonePositions,
             autoSliding
         } = this.state
         const transformStyle = this.getTransform()
+        const slideHeight =
+            vertical && slidesInView != "auto" && clonePositions.length
+                ? clonePositions[0].size
+                : null
+        const slideWidth =
+            !vertical && slidesInView != "auto" && clonePositions.length
+                ? clonePositions[0].size
+                : null
 
         return (
             <div
@@ -778,7 +780,7 @@ export default class Carousel extends React.Component {
                                     <CarouselSlide
                                         key={index}
                                         index={index}
-                                        itemRef={this.setItemRef}
+                                        itemRef={this.setSlideRef}
                                     >
                                         {item}
                                     </CarouselSlide>
@@ -791,20 +793,13 @@ export default class Carousel extends React.Component {
                                     <CarouselSlide
                                         key={index}
                                         index={index}
+                                        itemRef={this.setSlideRef}
                                         isCurrent={index == currentIndex}
                                         onClick={e =>
                                             this.handleSelect(index, e)
                                         }
-                                        width={
-                                            !vertical && fixedSlideSize
-                                                ? fixedSlideSize
-                                                : null
-                                        }
-                                        height={
-                                            vertical && fixedSlideSize
-                                                ? fixedSlideSize
-                                                : null
-                                        }
+                                        width={slideWidth}
+                                        height={slideHeight}
                                     >
                                         {item}
                                     </CarouselSlide>

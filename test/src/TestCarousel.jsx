@@ -132,21 +132,15 @@ export default class TestCarousel extends React.Component {
                         <>
                             <div className="main">
                                 <Carousel
-                                    slidesInView={{
-                                        1024: 5,
-                                        800: 4,
-                                        600: 3,
-                                        400: 2
-                                    }}
-                                    controls={controls}
+                                    slidesInView="auto"
+                                    controls={false}
                                     loop={false}
                                     infinite={true}
-                                    snap={snap}
+                                    snap={true}
                                     vertical={vertical}
                                     currentIndex={currentSlide}
                                     onChangeIndex={this.updateCurrentSlide}
                                     swipeMode="drag"
-                                    swipeConfig={{ delta: 10 }}
                                 >
                                     {items.map((slide, index) => {
                                         return (
