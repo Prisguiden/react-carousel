@@ -39,6 +39,8 @@
 }
 .carousel--vertical {
   flex-direction: column;
+  touch-action: none;
+  /* disable scrolling up/down on page */
 }
 .carousel__slide {
   position: relative;
@@ -54,11 +56,8 @@
 .carousel__slide > * {
   max-width: 100%;
   max-height: 100%;
-  touch-action: none;
 }
-.carousel__slide a, .carousel__slide img {
-  /* this is unfortunately the only way i've managed to disable native/OS drag events */
-  /* use <Carousel onSelect={myOnSelectFunc(index, event)}> if navigation or other actions are needed for the slide */
+.carousel__slide img {
   pointer-events: none;
 }
 .carousel__control {
