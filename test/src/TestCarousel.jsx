@@ -156,6 +156,7 @@ export default class TestCarousel extends React.Component {
                             </div>
                             <div className="thumbs">
                                 <Carousel
+                                    autoplay={true}
                                     slidesInView={slides}
                                     controls={controls}
                                     loop={true}

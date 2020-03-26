@@ -44,6 +44,7 @@ export default class Carousel extends React.Component {
         this.autoSlideSpeed = 300 // ms - this may change, depending isLooping & autoSliding states
         this.snapTimeout = null // make shure all parameters from snapping is set before running transitions
         this.transitionTimeout = null // to disable transition-duration (css prop) after autoSlideSpeed
+        this.autoplayTimeout = null
 
         // init/setup functions
         this.setCarouselRef = this.setCarouselRef.bind(this)
@@ -56,6 +57,8 @@ export default class Carousel extends React.Component {
         this.changeCurrentIndex = this.changeCurrentIndex.bind(this)
 
         // methods for usage
+        this.autoplay = this.autoplay.bind(this)
+        this.extendAutoplayDelay = this.extendAutoplayDelay.bind(this)
         this.prev = this.prev.bind(this)
         this.next = this.next.bind(this)
         this.handleKeyboard = this.handleKeyboard.bind(this)
@@ -74,10 +77,18 @@ export default class Carousel extends React.Component {
             slidesInView,
             vertical,
             infinite,
-            swipeMode
+            swipeMode,
+            autoplay
         } = this.props
         if (keyboard) {
             document.addEventListener("keydown", this.handleKeyboard)
+        }
+
+        const autoplayDelay = autoplay === true ? 5000 : autoplay
+        if (autoplayDelay) {
+            this.autoplayTimeout = setTimeout(() => {
+                this.autoplay(autoplayDelay)
+            }, autoplayDelay)
         }
 
         // Add resizeObserver and recalculate slide sizes if slidesInView != auto
@@ -111,6 +122,7 @@ export default class Carousel extends React.Component {
         // kill timeouts, eventlisteners and observers
         clearTimeout(this.snapTimeout)
         clearTimeout(this.transitionTimeout)
+        clearTimeout(this.autoplayTimeout)
 
         const { keyboard } = this.props
         if (keyboard) {
@@ -429,6 +441,36 @@ export default class Carousel extends React.Component {
         }
     }
 
+    autoplay(delay) {
+        const { loop } = this.props
+        const { currentIndex, clonePositions } = this.state
+        if (currentIndex < clonePositions.length - 1) {
+            this.changeCurrentIndex(currentIndex + 1)
+        } else {
+            if (loop) this.changeCurrentIndex(0)
+        }
+
+        // make this method run again after <nextDelay> time
+        this.autoplayTimeout = setTimeout(() => {
+            this.autoplay(delay)
+        }, delay)
+    }
+
+    extendAutoplayDelay() {
+        const { autoplay } = this.props
+        const autoplayDelay = autoplay === true ? 5000 : autoplay
+        if (autoplayDelay) {
+            // stop autoplay and restart it after twice as long as usual
+            const resumeDelay = autoplayDelay * 2
+            clearTimeout(this.autoplayTimeout)
+            this.autoplayTimeout = setTimeout(() => {
+                this.autoplay(autoplayDelay)
+            }, resumeDelay)
+        }
+    }
+
+    // !not to be confused with autoPlay!
+    // this method is used internally to slide between chosen indexes
     autoSlide(nextState, speed) {
         const { swipeMode } = this.props
         const { isLooping } = this.state
@@ -527,6 +569,7 @@ export default class Carousel extends React.Component {
     prev() {
         const { children, loop } = this.props
         const { currentIndex } = this.state
+        this.extendAutoplayDelay()
         if (currentIndex > 0) {
             this.changeCurrentIndex(currentIndex - 1)
         } else {
@@ -537,6 +580,7 @@ export default class Carousel extends React.Component {
     next() {
         const { children, loop } = this.props
         const { currentIndex, clonePositions } = this.state
+        this.extendAutoplayDelay()
         if (currentIndex < clonePositions.length - 1) {
             this.changeCurrentIndex(currentIndex + 1)
         } else {
@@ -573,6 +617,7 @@ export default class Carousel extends React.Component {
 
     onSwipeDrag(eventData) {
         const { vertical } = this.props
+        this.extendAutoplayDelay()
         this.setState({
             isDragging: true,
             swiping: vertical ? eventData.deltaY : eventData.deltaX
@@ -830,6 +875,7 @@ export default class Carousel extends React.Component {
 }
 
 Carousel.defaultProps = {
+    autoplay: false,
     slidesInView: "auto",
     swipeMode: "step",
     lazySwipe: true,
@@ -843,6 +889,8 @@ Carousel.defaultProps = {
 }
 
 Carousel.propTypes = {
+    autoplay: PropTypes.oneOfType([PropTypes.bool, PropTypes.number])
+        .isRequired,
     className: PropTypes.string,
     currentIndex: PropTypes.number,
     onChangeIndex: PropTypes.func,
