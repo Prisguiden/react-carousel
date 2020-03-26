@@ -132,7 +132,8 @@ function (_React$Component) {
     _this.snapTimeout = null; // make shure all parameters from snapping is set before running transitions
 
     _this.transitionTimeout = null; // to disable transition-duration (css prop) after autoSlideSpeed
-    // init/setup functions
+
+    _this.autoplayTimeout = null; // init/setup functions
 
     _this.setCarouselRef = _this.setCarouselRef.bind(_assertThisInitialized(_this));
     _this.setSlideRef = _this.setSlideRef.bind(_assertThisInitialized(_this));
@@ -142,6 +143,8 @@ function (_React$Component) {
 
     _this.changeCurrentIndex = _this.changeCurrentIndex.bind(_assertThisInitialized(_this)); // methods for usage
 
+    _this.autoplay = _this.autoplay.bind(_assertThisInitialized(_this));
+    _this.extendAutoplayDelay = _this.extendAutoplayDelay.bind(_assertThisInitialized(_this));
     _this.prev = _this.prev.bind(_assertThisInitialized(_this));
     _this.next = _this.next.bind(_assertThisInitialized(_this));
     _this.handleKeyboard = _this.handleKeyboard.bind(_assertThisInitialized(_this));
@@ -165,10 +168,19 @@ function (_React$Component) {
           slidesInView = _this$props.slidesInView,
           vertical = _this$props.vertical,
           infinite = _this$props.infinite,
-          swipeMode = _this$props.swipeMode;
+          swipeMode = _this$props.swipeMode,
+          autoplay = _this$props.autoplay;
 
       if (keyboard) {
         document.addEventListener("keydown", this.handleKeyboard);
+      }
+
+      var autoplayDelay = autoplay === true ? 5000 : autoplay;
+
+      if (autoplayDelay) {
+        this.autoplayTimeout = setTimeout(function () {
+          _this2.autoplay(autoplayDelay);
+        }, autoplayDelay);
       } // Add resizeObserver and recalculate slide sizes if slidesInView != auto
 
 
@@ -220,6 +232,7 @@ function (_React$Component) {
       // kill timeouts, eventlisteners and observers
       clearTimeout(this.snapTimeout);
       clearTimeout(this.transitionTimeout);
+      clearTimeout(this.autoplayTimeout);
       var keyboard = this.props.keyboard;
 
       if (keyboard) {
@@ -541,9 +554,49 @@ function (_React$Component) {
       }
     }
   }, {
+    key: "autoplay",
+    value: function autoplay(delay) {
+      var _this6 = this;
+
+      var loop = this.props.loop;
+      var _this$state3 = this.state,
+          currentIndex = _this$state3.currentIndex,
+          clonePositions = _this$state3.clonePositions;
+
+      if (currentIndex < clonePositions.length - 1) {
+        this.changeCurrentIndex(currentIndex + 1);
+      } else {
+        if (loop) this.changeCurrentIndex(0);
+      } // make this method run again after <nextDelay> time
+
+
+      this.autoplayTimeout = setTimeout(function () {
+        _this6.autoplay(delay);
+      }, delay);
+    }
+  }, {
+    key: "extendAutoplayDelay",
+    value: function extendAutoplayDelay() {
+      var _this7 = this;
+
+      var autoplay = this.props.autoplay;
+      var autoplayDelay = autoplay === true ? 5000 : autoplay;
+
+      if (autoplayDelay) {
+        // stop autoplay and restart it after twice as long as usual
+        var resumeDelay = autoplayDelay * 2;
+        clearTimeout(this.autoplayTimeout);
+        this.autoplayTimeout = setTimeout(function () {
+          _this7.autoplay(autoplayDelay);
+        }, resumeDelay);
+      }
+    } // !not to be confused with autoPlay!
+    // this method is used internally to slide between chosen indexes
+
+  }, {
     key: "autoSlide",
     value: function autoSlide(nextState, speed) {
-      var _this6 = this;
+      var _this8 = this;
 
       var swipeMode = this.props.swipeMode;
       var isLooping = this.state.isLooping;
@@ -563,25 +616,25 @@ function (_React$Component) {
         if (isLooping && !nextState.isLooping) {
           // await stopping isLooping by breaking it out in its own, delayed setState
           delete nextState.isLooping;
-          _this6.fadeTimeout = setTimeout(function () {
-            _this6.setState({
+          _this8.fadeTimeout = setTimeout(function () {
+            _this8.setState({
               isLooping: false
             });
           }, 250);
         } // set the next state (perform the autoSlide)
 
 
-        _this6.setState(nextState, function () {
+        _this8.setState(nextState, function () {
           // stop autoSliding when the animations has completed
-          _this6.transitionTimeout = setTimeout(function () {
-            _this6.setState({
+          _this8.transitionTimeout = setTimeout(function () {
+            _this8.setState({
               autoSliding: false
             }, function () {
               if (resetSpeed) {
-                _this6.autoSlideSpeed = resetSpeed;
+                _this8.autoSlideSpeed = resetSpeed;
               }
             });
-          }, _this6.autoSlideSpeed);
+          }, _this8.autoSlideSpeed);
         });
       });
     }
@@ -643,6 +696,7 @@ function (_React$Component) {
           children = _this$props7.children,
           loop = _this$props7.loop;
       var currentIndex = this.state.currentIndex;
+      this.extendAutoplayDelay();
 
       if (currentIndex > 0) {
         this.changeCurrentIndex(currentIndex - 1);
@@ -656,9 +710,10 @@ function (_React$Component) {
       var _this$props8 = this.props,
           children = _this$props8.children,
           loop = _this$props8.loop;
-      var _this$state3 = this.state,
-          currentIndex = _this$state3.currentIndex,
-          clonePositions = _this$state3.clonePositions;
+      var _this$state4 = this.state,
+          currentIndex = _this$state4.currentIndex,
+          clonePositions = _this$state4.clonePositions;
+      this.extendAutoplayDelay();
 
       if (currentIndex < clonePositions.length - 1) {
         this.changeCurrentIndex(currentIndex + 1);
@@ -702,6 +757,7 @@ function (_React$Component) {
     key: "onSwipeDrag",
     value: function onSwipeDrag(eventData) {
       var vertical = this.props.vertical;
+      this.extendAutoplayDelay();
       this.setState({
         isDragging: true,
         swiping: vertical ? eventData.deltaY : eventData.deltaX
@@ -710,7 +766,7 @@ function (_React$Component) {
   }, {
     key: "onSwipeDragDone",
     value: function onSwipeDragDone(eventData) {
-      var _this7 = this;
+      var _this9 = this;
 
       // update currentIndex to the closest slideIndex from current swipe offset
       // remaining swipe value will be transitioned away if this.props.snap
@@ -721,10 +777,10 @@ function (_React$Component) {
           snap = _this$props9.snap,
           lazySwipe = _this$props9.lazySwipe,
           vertical = _this$props9.vertical;
-      var _this$state4 = this.state,
-          swiping = _this$state4.swiping,
-          currentIndex = _this$state4.currentIndex,
-          clonePositions = _this$state4.clonePositions;
+      var _this$state5 = this.state,
+          swiping = _this$state5.swiping,
+          currentIndex = _this$state5.currentIndex,
+          clonePositions = _this$state5.clonePositions;
       var pos = clonePositions[currentIndex].start + swiping;
       var closestItem = clonePositions.reduce(function (prev, curr) {
         return Math.abs(curr.start - pos) < Math.abs(prev.start - pos) ? curr : prev;
@@ -767,8 +823,8 @@ function (_React$Component) {
         isDragging: false
       }, function () {
         if (snap) {
-          _this7.snapTimeout = setTimeout(function () {
-            _this7.autoSlide({
+          _this9.snapTimeout = setTimeout(function () {
+            _this9.autoSlide({
               swiping: 0
             });
           }, 10);
@@ -782,14 +838,14 @@ function (_React$Component) {
           vertical = _this$props10.vertical,
           swipeMode = _this$props10.swipeMode,
           infinite = _this$props10.infinite;
-      var _this$state5 = this.state,
-          currentIndex = _this$state5.currentIndex,
-          offset = _this$state5.offset,
-          swiping = _this$state5.swiping,
-          autoSliding = _this$state5.autoSliding,
-          isLooping = _this$state5.isLooping,
-          isDragging = _this$state5.isDragging,
-          clonePositions = _this$state5.clonePositions;
+      var _this$state6 = this.state,
+          currentIndex = _this$state6.currentIndex,
+          offset = _this$state6.offset,
+          swiping = _this$state6.swiping,
+          autoSliding = _this$state6.autoSliding,
+          isLooping = _this$state6.isLooping,
+          isDragging = _this$state6.isDragging,
+          clonePositions = _this$state6.clonePositions;
       var style = {};
 
       if (clonePositions.length) {
@@ -831,7 +887,7 @@ function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      var _this8 = this;
+      var _this10 = this;
 
       var _this$props11 = this.props,
           className = _this$props11.className,
@@ -841,12 +897,12 @@ function (_React$Component) {
           swipeMode = _this$props11.swipeMode,
           vertical = _this$props11.vertical,
           children = _this$props11.children;
-      var _this$state6 = this.state,
-          currentIndex = _this$state6.currentIndex,
-          swiping = _this$state6.swiping,
-          clones = _this$state6.clones,
-          clonePositions = _this$state6.clonePositions,
-          autoSliding = _this$state6.autoSliding;
+      var _this$state7 = this.state,
+          currentIndex = _this$state7.currentIndex,
+          swiping = _this$state7.swiping,
+          clones = _this$state7.clones,
+          clonePositions = _this$state7.clonePositions,
+          autoSliding = _this$state7.autoSliding;
       var transformStyle = this.getTransform();
       var slideHeight = vertical && slidesInView != "auto" && clonePositions.length ? clonePositions[0].size : null;
       var slideWidth = !vertical && slidesInView != "auto" && clonePositions.length ? clonePositions[0].size : null;
@@ -872,16 +928,16 @@ function (_React$Component) {
         return _react["default"].createElement(_CarouselSlide["default"], {
           key: index,
           index: index,
-          itemRef: _this8.setSlideRef
+          itemRef: _this10.setSlideRef
         }, item);
       }), clones && clones.map(function (item, index) {
         return _react["default"].createElement(_CarouselSlide["default"], {
           key: index,
           index: index,
-          itemRef: _this8.setSlideRef,
+          itemRef: _this10.setSlideRef,
           isCurrent: index == currentIndex,
           onClick: function onClick(e) {
-            return _this8.handleSelect(index, e);
+            return _this10.handleSelect(index, e);
           },
           width: slideWidth,
           height: slideHeight
@@ -899,6 +955,7 @@ function (_React$Component) {
 
 exports["default"] = Carousel;
 Carousel.defaultProps = {
+  autoplay: false,
   slidesInView: "auto",
   swipeMode: "step",
   lazySwipe: true,
@@ -911,6 +968,7 @@ Carousel.defaultProps = {
   swipeConfig: {}
 };
 Carousel.propTypes = {
+  autoplay: _propTypes["default"].oneOfType([_propTypes["default"].bool, _propTypes["default"].number]).isRequired,
   className: _propTypes["default"].string,
   currentIndex: _propTypes["default"].number,
   onChangeIndex: _propTypes["default"].func,
