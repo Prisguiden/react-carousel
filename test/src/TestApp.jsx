@@ -14,11 +14,16 @@ export default class TestApp extends Component {
     render() {
         return (
             <article>
-                <header>Test/Debug page for @prisguiden/react-app</header>
+                <header>
+                    Test/Debug page for{" "}
+                    <a
+                        href="https://www.npmjs.com/package/@prisguiden/react-carousel"
+                        className="href"
+                    >
+                        @prisguiden/react-carousel
+                    </a>
+                </header>
                 <section>
-                    <header>
-                        <h2>TestCarousel</h2>
-                    </header>
                     <TestCarousel />
                 </section>
             </article>

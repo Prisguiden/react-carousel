@@ -5,11 +5,9 @@ html {
 }
 
 body {
-    font-family: "Rubik", sans-serif;
     background-color: #131e20;
-    color: #bbbbbb;
+    color: black;
     font-size: 16px;
-    font-size: 1.6rem;
     line-height: normal;
     font-family: Helvetica, Arial, sans-serif;
 }
@@ -18,6 +16,7 @@ header {
     display: block;
     max-width: 1000px;
     margin: 0 auto 30px;
+    color: white;
 }
 
 article {
@@ -28,11 +27,6 @@ article {
 
 section {
     margin-bottom: 30px;
-}
-
-section header {
-    background-color: black;
-    padding: 10px 15px;
 }
 
 a {
@@ -52,20 +46,23 @@ a {
 .test-carousel {
     background-color: white;
     border: thin solid rgba(206, 160, 244, 1);
-    border-radius: 0.6rem;
-    padding: 3rem;
+    padding: 30px;
+}
+
+.test-carousel__settings {
+    display: flex;
+    flex-direction: row;
 }
 
 .test-carousel__actions {
     border: thin solid red;
-    padding: 1.5rem;
-    border-radius: 0.3rem;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
 }
 
 .test-carousel__carousel {
-    //border: thin solid blue;
-    margin: 1.5rem auto;
-    border-radius: 0.3rem;
+    margin: 15px auto;
     width: 100%;
 }
 
@@ -81,10 +78,7 @@ a {
 }
 
 .test-carousel__actions button {
-    font-size: 1.6rem;
-    margin: 0.5rem;
-    height: 3rem;
-    border-radius: 0.3rem;
+    font-size: 16px;
 }
 
 .test-carousel__slide {
