@@ -14,7 +14,7 @@ export default class CarouselSlide extends React.Component {
             itemRef,
             index,
             width,
-            height
+            height,
         } = this.props
         const style = {}
         if (width) style.width = width
@@ -23,7 +23,9 @@ export default class CarouselSlide extends React.Component {
         return (
             <div
                 style={style}
-                ref={(itemRef && (element => itemRef(element, index))) || null}
+                ref={
+                    (itemRef && ((element) => itemRef(element, index))) || null
+                }
                 className={
                     "carousel__slide" +
                     (isCurrent ? " carousel__slide--current" : "")
@@ -42,5 +44,5 @@ CarouselSlide.propTypes = {
     onClick: PropTypes.func,
     width: PropTypes.number,
     height: PropTypes.number,
-    itemRef: PropTypes.func
+    itemRef: PropTypes.func,
 }

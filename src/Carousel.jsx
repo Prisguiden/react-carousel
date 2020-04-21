@@ -12,7 +12,7 @@ const defaultState = {
     clones: null, // children is converted into clones then displayed as slides
     clonePositions: [], // dataset of each clones relative start-position and size
     isLooping: false, // controls fadeout
-    isDragging: false // when user is interacting; disables transition-delay
+    isDragging: false, // when user is interacting; disables transition-delay
 }
 
 const defaultSwipeConfig = {
@@ -20,7 +20,7 @@ const defaultSwipeConfig = {
     preventDefaultTouchmoveEvent: true, // preventDefault on touchmove,
     trackTouch: true, // track touch input
     trackMouse: true, // track mouse input
-    rotationAngle: 0 // set a rotation angle
+    rotationAngle: 0, // set a rotation angle
 }
 
 export default class Carousel extends React.Component {
@@ -29,7 +29,7 @@ export default class Carousel extends React.Component {
 
         this.state = {
             currentIndex: this.props.currentIndex || 0,
-            ...defaultState
+            ...defaultState,
         }
 
         this.swipeConfig = Object.assign(
@@ -78,7 +78,7 @@ export default class Carousel extends React.Component {
             vertical,
             infinite,
             swipeMode,
-            autoplay
+            autoplay,
         } = this.props
         if (keyboard) {
             document.addEventListener("keydown", this.handleKeyboard)
@@ -107,7 +107,7 @@ export default class Carousel extends React.Component {
                                 this.setState({
                                     offset: this.calculateCarouselOffset(
                                         this.state.currentIndex
-                                    )
+                                    ),
                                 })
                             }
                         }
@@ -136,8 +136,10 @@ export default class Carousel extends React.Component {
     componentDidUpdate(prevProps, prevState) {
         const { onChangeIndex, children } = this.props
         const { clones } = this.state
-        var oldKeys = JSON.stringify(prevProps.children.map(child => child.key))
-        var newKeys = JSON.stringify(children.map(child => child.key))
+        var oldKeys = JSON.stringify(
+            prevProps.children.map((child) => child.key)
+        )
+        var newKeys = JSON.stringify(children.map((child) => child.key))
 
         if (
             clones &&
@@ -189,7 +191,7 @@ export default class Carousel extends React.Component {
                 : containerSize.width
             this.carouselRef = element
 
-            element.addEventListener("dragstart", e => {
+            element.addEventListener("dragstart", (e) => {
                 if (e.target.nodeName === "A") {
                     e.preventDefault()
                 }
@@ -204,7 +206,7 @@ export default class Carousel extends React.Component {
         if (element) {
             this.slideRefs[index] = {
                 index: index,
-                element: element
+                element: element,
             }
 
             // set up stuff when the final ref is set
@@ -297,7 +299,7 @@ export default class Carousel extends React.Component {
                 return {
                     index: index,
                     size: fixedSlideSize,
-                    start: fixedSlideSize * index
+                    start: fixedSlideSize * index,
                 }
             })
         } else {
@@ -312,7 +314,7 @@ export default class Carousel extends React.Component {
                 const result = {
                     index: index,
                     size: vertical ? slideSizes.height : slideSizes.width,
-                    start: prev ? prev.start + prev.size : 0
+                    start: prev ? prev.start + prev.size : 0,
                 }
                 prev = result
                 return result
@@ -353,7 +355,8 @@ export default class Carousel extends React.Component {
             // Figure out if we should play somekind of autoslide transition
             if (
                 (!infinite && !loop) ||
-                (idx == currentIndex + 1 || idx == currentIndex - 1)
+                idx == currentIndex + 1 ||
+                idx == currentIndex - 1
             ) {
                 // NO INFINITE OR LOOP
                 // OR regular step +/- just one slide changed
@@ -405,7 +408,7 @@ export default class Carousel extends React.Component {
                                 currentIndex: idx,
                                 swiping: autoswipe,
                                 isLooping: true,
-                                offset: nextOffset
+                                offset: nextOffset,
                             },
                             () => {
                                 this.snapTimeout = setTimeout(() => {
@@ -428,7 +431,7 @@ export default class Carousel extends React.Component {
                         {
                             currentIndex: idx,
                             swiping: autoswipe,
-                            offset: nextOffset
+                            offset: nextOffset,
                         },
                         () => {
                             this.snapTimeout = setTimeout(() => {
@@ -620,7 +623,7 @@ export default class Carousel extends React.Component {
         this.extendAutoplayDelay()
         this.setState({
             isDragging: true,
-            swiping: vertical ? eventData.deltaY : eventData.deltaX
+            swiping: vertical ? eventData.deltaY : eventData.deltaX,
         })
     }
 
@@ -690,7 +693,7 @@ export default class Carousel extends React.Component {
             autoSliding,
             isLooping,
             isDragging,
-            clonePositions
+            clonePositions,
         } = this.state
 
         const style = {}
@@ -742,14 +745,14 @@ export default class Carousel extends React.Component {
             onSelect,
             swipeMode,
             vertical,
-            children
+            children,
         } = this.props
         const {
             currentIndex,
             swiping,
             clones,
             clonePositions,
-            autoSliding
+            autoSliding,
         } = this.state
         const transformStyle = this.getTransform()
         const slideHeight =
@@ -842,7 +845,7 @@ export default class Carousel extends React.Component {
                                         index={index}
                                         itemRef={this.setSlideRef}
                                         isCurrent={index == currentIndex}
-                                        onClick={e =>
+                                        onClick={(e) =>
                                             this.handleSelect(index, e)
                                         }
                                         width={slideWidth}
@@ -885,7 +888,7 @@ Carousel.defaultProps = {
     vertical: false,
     keyboard: false,
     controls: false,
-    swipeConfig: {}
+    swipeConfig: {},
 }
 
 Carousel.propTypes = {
@@ -903,10 +906,10 @@ Carousel.propTypes = {
     slidesInView: PropTypes.oneOfType([
         PropTypes.object,
         PropTypes.number,
-        PropTypes.oneOf(["auto"])
+        PropTypes.oneOf(["auto"]),
     ]).isRequired,
     swipeMode: PropTypes.oneOf(["drag", "step", "none"]).isRequired,
     keyboard: PropTypes.bool.isRequired,
     controls: PropTypes.bool.isRequired,
-    swipeConfig: PropTypes.object.isRequired
+    swipeConfig: PropTypes.object.isRequired,
 }
