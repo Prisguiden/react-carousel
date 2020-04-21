@@ -263,6 +263,10 @@ export default class Carousel extends React.Component {
         const { slidesInView, infinite, vertical } = this.props
         const { clones } = this.state
 
+        if (clones === null) {
+            return null
+        }
+
         let fixedSlideSize = null
         if (typeof slidesInView === "object" && slidesInView != null) {
             // carousel is operating with dynamic set of boundaries for slidesInView.
