@@ -28,8 +28,8 @@ export default class Carousel extends React.Component {
         super(props)
 
         this.state = {
-            currentIndex: this.props.currentIndex || 0,
             ...defaultState,
+            currentIndex: this.props.currentIndex || 0,
         }
 
         this.swipeConfig = Object.assign(

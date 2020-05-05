@@ -95,9 +95,9 @@ var Carousel = /*#__PURE__*/function (_React$Component) {
     _classCallCheck(this, Carousel);
 
     _this = _super.call(this, props);
-    _this.state = _objectSpread({
+    _this.state = _objectSpread({}, defaultState, {
       currentIndex: _this.props.currentIndex || 0
-    }, defaultState);
+    });
     _this.swipeConfig = Object.assign({}, defaultSwipeConfig, props.swipeConfig);
     _this.carouselRef = null; // carousel element reference
 
