@@ -332,19 +332,27 @@ export default class Carousel extends React.Component {
         // * ON PREV/NEXT
         // * WHENEVER A CONTROLLED COMPONENT GETS NEW INDEX FROM PARENT
 
-        const { infinite, loop, children, swipeMode } = this.props
+        const {
+            infinite,
+            loop,
+            children,
+            swipeMode,
+            blurScrollDelta,
+        } = this.props
         const { currentIndex, clonePositions } = this.state
         const slidesCount = children.length
 
-        let idx = index
+        // Index within the 3xclones of our images [images, images, images]
+        let cloneIndex = index
+
         if (infinite) {
             // might need to update to a more fitting (clone) index
             // only if we're told to change index to a slide outside the mid-range of an infinite carousel
             if (index <= slidesCount - 1) {
-                idx = slidesCount + index
+                cloneIndex = slidesCount + index
             }
             if (index >= slidesCount * 2) {
-                idx = index - slidesCount
+                cloneIndex = index - slidesCount
             }
         }
 
@@ -352,22 +360,24 @@ export default class Carousel extends React.Component {
         // these carousels use this state.offset instead of currentIndex in this.getTransform()
         const nextOffset =
             !infinite && swipeMode == "step"
-                ? this.calculateCarouselOffset(idx)
+                ? this.calculateCarouselOffset(cloneIndex)
                 : 0
 
-        if (idx != currentIndex) {
+        if (cloneIndex != currentIndex) {
             // Figure out if we should play somekind of autoslide transition
             if (
                 (!infinite && !loop) ||
-                idx == currentIndex + 1 ||
-                idx == currentIndex - 1
+                (cloneIndex > currentIndex &&
+                    cloneIndex < currentIndex + blurScrollDelta) ||
+                (cloneIndex < currentIndex &&
+                    cloneIndex > currentIndex - blurScrollDelta)
             ) {
                 // NO INFINITE OR LOOP
                 // OR regular step +/- just one slide changed
                 // other methods calling this function prevents going beyond available index
 
                 // TODO: Improve this algorithm to allow regular autosliding for several steps when the distance is short
-                this.autoSlide({ currentIndex: idx, offset: nextOffset })
+                this.autoSlide({ currentIndex: cloneIndex, offset: nextOffset })
             } else {
                 // WELCOME TO THE DANGERZONE! WE ARE SPECEWARPING INTO HYPERSPACE
 
@@ -375,15 +385,15 @@ export default class Carousel extends React.Component {
                 let infiniteSingleStep = 0
                 if (infinite) {
                     if (
-                        currentIndex == idx + 1 ||
-                        currentIndex == idx + slidesCount + 1 ||
-                        currentIndex == idx - slidesCount + 1
+                        currentIndex == cloneIndex + 1 ||
+                        currentIndex == cloneIndex + slidesCount + 1 ||
+                        currentIndex == cloneIndex - slidesCount + 1
                     )
                         infiniteSingleStep = 1
                     if (
-                        currentIndex == idx - 1 ||
-                        currentIndex == idx + slidesCount - 1 ||
-                        currentIndex == idx - slidesCount - 1
+                        currentIndex == cloneIndex - 1 ||
+                        currentIndex == cloneIndex + slidesCount - 1 ||
+                        currentIndex == cloneIndex - slidesCount - 1
                     )
                         infiniteSingleStep = -1
                 }
@@ -400,16 +410,16 @@ export default class Carousel extends React.Component {
                         this.availableSize > totalSlidesSize
                     ) {
                         // prevent playing loop animation; all slides are visible at all times
-                        this.autoSlide({ currentIndex: idx })
+                        this.autoSlide({ currentIndex: cloneIndex })
                     } else {
                         const autoswipe =
                             clonePositions[currentIndex].start -
-                            clonePositions[idx].start
+                            clonePositions[cloneIndex].start
                         //const speed = Math.round(Math.abs(autoswipe) * 0.25)
                         const speed = 0
                         this.setState(
                             {
-                                currentIndex: idx,
+                                currentIndex: cloneIndex,
                                 swiping: autoswipe,
                                 isLooping: true,
                                 offset: nextOffset,
@@ -428,12 +438,13 @@ export default class Carousel extends React.Component {
                     // only changing index by one slide
                     // BUT jumping between first/last item to facilitate infinite scroll
                     // postitive infiniteSingleStep value means going forwards
-                    const autoSwipingItemId = idx < currentIndex ? idx - 1 : idx
+                    const autoSwipingItemId =
+                        cloneIndex < currentIndex ? cloneIndex - 1 : cloneIndex
                     const dist = clonePositions[autoSwipingItemId].size
                     const autoswipe = infiniteSingleStep == 1 ? dist : -dist
                     this.setState(
                         {
-                            currentIndex: idx,
+                            currentIndex: cloneIndex,
                             swiping: autoswipe,
                             offset: nextOffset,
                         },
@@ -892,6 +903,7 @@ Carousel.defaultProps = {
     vertical: false,
     keyboard: false,
     controls: false,
+    blurScrollDelta: 2,
     swipeConfig: {},
 }
 
@@ -916,4 +928,5 @@ Carousel.propTypes = {
     keyboard: PropTypes.bool.isRequired,
     controls: PropTypes.bool.isRequired,
     swipeConfig: PropTypes.object.isRequired,
+    blurScrollDelta: PropTypes.number,
 }

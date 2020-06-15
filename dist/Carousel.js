@@ -430,38 +430,40 @@ var Carousel = /*#__PURE__*/function (_React$Component) {
           infinite = _this$props6.infinite,
           loop = _this$props6.loop,
           children = _this$props6.children,
-          swipeMode = _this$props6.swipeMode;
+          swipeMode = _this$props6.swipeMode,
+          blurScrollDelta = _this$props6.blurScrollDelta;
       var _this$state2 = this.state,
           currentIndex = _this$state2.currentIndex,
           clonePositions = _this$state2.clonePositions;
-      var slidesCount = children.length;
-      var idx = index;
+      var slidesCount = children.length; // Index within the 3xclones of our images [images, images, images]
+
+      var cloneIndex = index;
 
       if (infinite) {
         // might need to update to a more fitting (clone) index
         // only if we're told to change index to a slide outside the mid-range of an infinite carousel
         if (index <= slidesCount - 1) {
-          idx = slidesCount + index;
+          cloneIndex = slidesCount + index;
         }
 
         if (index >= slidesCount * 2) {
-          idx = index - slidesCount;
+          cloneIndex = index - slidesCount;
         }
       } // specialcase when props [ !inifinte && swipeMode == "step" ]
       // these carousels use this state.offset instead of currentIndex in this.getTransform()
 
 
-      var nextOffset = !infinite && swipeMode == "step" ? this.calculateCarouselOffset(idx) : 0;
+      var nextOffset = !infinite && swipeMode == "step" ? this.calculateCarouselOffset(cloneIndex) : 0;
 
-      if (idx != currentIndex) {
+      if (cloneIndex != currentIndex) {
         // Figure out if we should play somekind of autoslide transition
-        if (!infinite && !loop || idx == currentIndex + 1 || idx == currentIndex - 1) {
+        if (!infinite && !loop || cloneIndex > currentIndex && cloneIndex < currentIndex + blurScrollDelta || cloneIndex < currentIndex && cloneIndex > currentIndex - blurScrollDelta) {
           // NO INFINITE OR LOOP
           // OR regular step +/- just one slide changed
           // other methods calling this function prevents going beyond available index
           // TODO: Improve this algorithm to allow regular autosliding for several steps when the distance is short
           this.autoSlide({
-            currentIndex: idx,
+            currentIndex: cloneIndex,
             offset: nextOffset
           });
         } else {
@@ -470,8 +472,8 @@ var Carousel = /*#__PURE__*/function (_React$Component) {
           var infiniteSingleStep = 0;
 
           if (infinite) {
-            if (currentIndex == idx + 1 || currentIndex == idx + slidesCount + 1 || currentIndex == idx - slidesCount + 1) infiniteSingleStep = 1;
-            if (currentIndex == idx - 1 || currentIndex == idx + slidesCount - 1 || currentIndex == idx - slidesCount - 1) infiniteSingleStep = -1;
+            if (currentIndex == cloneIndex + 1 || currentIndex == cloneIndex + slidesCount + 1 || currentIndex == cloneIndex - slidesCount + 1) infiniteSingleStep = 1;
+            if (currentIndex == cloneIndex - 1 || currentIndex == cloneIndex + slidesCount - 1 || currentIndex == cloneIndex - slidesCount - 1) infiniteSingleStep = -1;
           }
 
           if (infiniteSingleStep == 0) {
@@ -482,14 +484,14 @@ var Carousel = /*#__PURE__*/function (_React$Component) {
             if (!infinite && swipeMode == "step" && this.availableSize > totalSlidesSize) {
               // prevent playing loop animation; all slides are visible at all times
               this.autoSlide({
-                currentIndex: idx
+                currentIndex: cloneIndex
               });
             } else {
-              var autoswipe = clonePositions[currentIndex].start - clonePositions[idx].start; //const speed = Math.round(Math.abs(autoswipe) * 0.25)
+              var autoswipe = clonePositions[currentIndex].start - clonePositions[cloneIndex].start; //const speed = Math.round(Math.abs(autoswipe) * 0.25)
 
               var speed = 0;
               this.setState({
-                currentIndex: idx,
+                currentIndex: cloneIndex,
                 swiping: autoswipe,
                 isLooping: true,
                 offset: nextOffset
@@ -506,13 +508,13 @@ var Carousel = /*#__PURE__*/function (_React$Component) {
             // only changing index by one slide
             // BUT jumping between first/last item to facilitate infinite scroll
             // postitive infiniteSingleStep value means going forwards
-            var autoSwipingItemId = idx < currentIndex ? idx - 1 : idx;
+            var autoSwipingItemId = cloneIndex < currentIndex ? cloneIndex - 1 : cloneIndex;
             var dist = clonePositions[autoSwipingItemId].size;
 
             var _autoswipe = infiniteSingleStep == 1 ? dist : -dist;
 
             this.setState({
-              currentIndex: idx,
+              currentIndex: cloneIndex,
               swiping: _autoswipe,
               offset: nextOffset
             }, function () {
@@ -938,6 +940,7 @@ Carousel.defaultProps = {
   vertical: false,
   keyboard: false,
   controls: false,
+  blurScrollDelta: 2,
   swipeConfig: {}
 };
 Carousel.propTypes = {
@@ -955,5 +958,6 @@ Carousel.propTypes = {
   swipeMode: _propTypes["default"].oneOf(["drag", "step", "none"]).isRequired,
   keyboard: _propTypes["default"].bool.isRequired,
   controls: _propTypes["default"].bool.isRequired,
-  swipeConfig: _propTypes["default"].object.isRequired
+  swipeConfig: _propTypes["default"].object.isRequired,
+  blurScrollDelta: _propTypes["default"].number
 };
