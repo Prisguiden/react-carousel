@@ -8,6 +8,10 @@
   ],
   "author": "Geir Kristian Thunem @ Prisguiden",
   "license": "MIT",
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "https://npm.pkg.github.com/"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Prisguiden/react-carousel.git"
